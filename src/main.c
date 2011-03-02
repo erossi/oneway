@@ -1,12 +1,12 @@
-/* This file is part of hospitv
+/* This file is part of HospiTV
  * Copyright (C) 2011 Enrico Rossi
  *
- * Chpc is free software: you can redistribute it and/or modify
+ * HospiTV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Chpc is distributed in the hope that it will be useful,
+ * HospiTV is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
