@@ -45,6 +45,7 @@ SIZE = avr-size
 REMOVE = rm -f
 
 objects = led.o uart.o
+rx_obj = $(objects) receive.o
 
 .PHONY: clean indent
 .SILENT: help
@@ -56,8 +57,8 @@ master: $(objects)
 	$(CC) $(CFLAGS) -o $(PRGNAME)_master.elf main.c -D MASTER $(objects) $(LFLAGS)
 	$(OBJCOPY) $(PRGNAME)_master.elf $(PRGNAME)_master.hex
 
-slave: $(objects)
-	$(CC) $(CFLAGS) -o $(PRGNAME)_slave.elf main.c -D SLAVE $(objects) $(LFLAGS)
+slave: $(rx_obj)
+	$(CC) $(CFLAGS) -o $(PRGNAME)_slave.elf main.c -D SLAVE $(rx_obj) $(LFLAGS)
 	$(OBJCOPY) $(PRGNAME)_slave.elf $(PRGNAME)_slave.hex
 
 debug.o:

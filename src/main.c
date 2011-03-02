@@ -25,12 +25,12 @@
 #define AU_TXRX PA6
 
 #include <stdlib.h>
-#include <string.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/delay.h>
 #include "led.h"
 #include "uart.h"
+#include "receive.h"
 
 void master(void)
 {
@@ -74,46 +74,6 @@ void master(void)
 */
 		_delay_ms(1000);
 		}
-}
-
-void slave(void)
-{
-	char *buff;
-	int i;
-
-	buff = malloc(10);
-
-	AU_PORT |= _BV(AU_ENABLE);
-	_delay_us(20);
-	AU_PORT |= _BV(AU_TXRX);
-	_delay_us(200);
-	AU_PORT &= ~_BV(AU_TXRX);
-	_delay_us(40);
-	AU_PORT &= ~_BV(AU_ENABLE);
-	_delay_us(20);
-	AU_PORT |= _BV(AU_ENABLE);
-	_delay_us(200);
-
-	while (1) {
-		i=0;
-		*buff = uart_getchar(1);		
-		
-		if (*buff == 't') {
-			for (i=1; i<6; i++)
-				*(buff + i) = uart_getchar(1);
-
-			*(buff + 6) = 0;
-
-			if (strstr(buff, "turn_0"))
-				led_set(BOTH, OFF);
-
-			if (strstr(buff, "turn_1"))
-				led_set(GREEN, ON);
-
-		}
-	}
-
-	free(buff);
 }
 
 int main(void)
