@@ -15,48 +15,55 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*! \file main.c
+/*! \file transmit.c
   \brief Main.
  */
 
-#define AU_PORT PORTA
-#define AU_DDR DDRA
-#define AU_ENABLE PA5
-#define AU_TXRX PA6
-
 #include <stdlib.h>
-#include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/delay.h>
-#include "led.h"
-#include "uart.h"
-
-#ifdef SLAVE
-#include "receive.h"
-#endif
-
-#ifdef MASTER
 #include "transmit.h"
-#endif
 
-int main(void)
+void master(void)
 {
-	/* Init sequence, turn on both led */
-	led_init();
-	uart_init(1);
-	AU_DDR |= _BV(AU_ENABLE) | _BV(AU_TXRX);
-	led_set(BOTH, OFF);
+	AU_PORT |= _BV(AU_ENABLE);
+	_delay_us(20);
+	AU_PORT |= _BV(AU_TXRX);
+	_delay_us(400);
 
-	sei();
+	while (1) {
+/*
+		AU_PORT |= _BV(AU_TXRX);
+		_delay_us(400);
+*/
+		led_set(RED, ON);
+		uart_printstr(1, "turn_1");
+		_delay_ms(50);
+		uart_printstr(1, "turn_1");
 
-#ifdef MASTER
-	master();
-#endif
+/*
+		uart_printstr(1, "turn_1");
+		_delay_ms(1);
 
-#ifdef SLAVE
-	slave();
-#endif
+		AU_PORT &= ~_BV(AU_TXRX);
+		_delay_us(400);
+*/
+		_delay_ms(1000);
+/*
+		AU_PORT |= _BV(AU_TXRX);
+		_delay_us(400);
+*/
+		led_set(BOTH, OFF);
+		uart_printstr(1, "turn_0");
+		_delay_ms(50);
+		uart_printstr(1, "turn_0");
+/*
+		uart_printstr(1, "turn_0");
+		_delay_ms(1);
 
-	cli();
-	return(0);
+		AU_PORT &= ~_BV(AU_TXRX);
+		_delay_us(400);
+*/
+		_delay_ms(1000);
+		}
 }

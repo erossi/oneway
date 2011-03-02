@@ -46,6 +46,7 @@ REMOVE = rm -f
 
 objects = led.o uart.o
 rx_obj = $(objects) receive.o
+tx_obj = $(objects) transmit.o
 
 .PHONY: clean indent
 .SILENT: help
@@ -53,8 +54,8 @@ rx_obj = $(objects) receive.o
 
 all: master slave
 
-master: $(objects)
-	$(CC) $(CFLAGS) -o $(PRGNAME)_master.elf main.c -D MASTER $(objects) $(LFLAGS)
+master: $(tx_obj)
+	$(CC) $(CFLAGS) -o $(PRGNAME)_master.elf main.c -D MASTER $(tx_obj) $(LFLAGS)
 	$(OBJCOPY) $(PRGNAME)_master.elf $(PRGNAME)_master.hex
 
 slave: $(rx_obj)
@@ -68,7 +69,7 @@ program:
 	$(DUDE)
 
 clean:
-	$(REMOVE) *.elf *.hex $(objects)
+	$(REMOVE) *.elf *.hex $(rx_obj) $(tx_obj)
 
 version:
 	# Last Git tag: $(GITRELEASE)

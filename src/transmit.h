@@ -1,5 +1,5 @@
 /* This file is part of HospiTV
- * Copyright (C) 2011 Enrico Rossi
+ * Copyright (C) 2010, 2011 Enrico Rossi
  *
  * HospiTV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,48 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*! \file main.c
-  \brief Main.
- */
+/*! \file transmit.h
+  \brief Utility for tx.
+  */
+
+#ifndef TX_H
+#define TX_H
 
 #define AU_PORT PORTA
 #define AU_DDR DDRA
 #define AU_ENABLE PA5
 #define AU_TXRX PA6
 
-#include <stdlib.h>
-#include <avr/interrupt.h>
-#include <avr/io.h>
-#include <util/delay.h>
 #include "led.h"
 #include "uart.h"
 
-#ifdef SLAVE
-#include "receive.h"
+void master(void);
+
 #endif
-
-#ifdef MASTER
-#include "transmit.h"
-#endif
-
-int main(void)
-{
-	/* Init sequence, turn on both led */
-	led_init();
-	uart_init(1);
-	AU_DDR |= _BV(AU_ENABLE) | _BV(AU_TXRX);
-	led_set(BOTH, OFF);
-
-	sei();
-
-#ifdef MASTER
-	master();
-#endif
-
-#ifdef SLAVE
-	slave();
-#endif
-
-	cli();
-	return(0);
-}
