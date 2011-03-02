@@ -28,42 +28,38 @@ void master(void)
 {
 	AU_PORT |= _BV(AU_ENABLE);
 	_delay_us(20);
-	AU_PORT |= _BV(AU_TXRX);
-	_delay_us(400);
 
 	while (1) {
-/*
+		/* Enable TX signal */
 		AU_PORT |= _BV(AU_TXRX);
 		_delay_us(400);
-*/
+
 		led_set(RED, ON);
 		uart_printstr(1, "turn_1");
 		_delay_ms(50);
 		uart_printstr(1, "turn_1");
 
-/*
-		uart_printstr(1, "turn_1");
+		/* Disable TX signal */
 		_delay_ms(1);
-
 		AU_PORT &= ~_BV(AU_TXRX);
 		_delay_us(400);
-*/
+
 		_delay_ms(1000);
-/*
+
+		/* Enable TX signal */
 		AU_PORT |= _BV(AU_TXRX);
 		_delay_us(400);
-*/
+
 		led_set(BOTH, OFF);
 		uart_printstr(1, "turn_0");
 		_delay_ms(50);
 		uart_printstr(1, "turn_0");
-/*
-		uart_printstr(1, "turn_0");
-		_delay_ms(1);
 
+		/* Disable TX signal */
+		_delay_ms(1);
 		AU_PORT &= ~_BV(AU_TXRX);
 		_delay_us(400);
-*/
+
 		_delay_ms(1000);
 		}
 }
