@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-PRJ_NAME = hospitv
+PRG_NAME = hospitv
 MCU = atmega164p
 OPTLEV = 2
 FCPU = 1000000UL
@@ -23,8 +23,10 @@ INC = -I/usr/lib/avr/include/
 CFLAGS = $(INC) -Wall -Wstrict-prototypes -pedantic -mmcu=$(MCU) -O$(OPTLEV) -D F_CPU=$(FCPU)
 LFLAGS =
 
-GITRELEASE = "\"$(shell git describe --tags)\""
-PRGNAME = $(PRJ_NAME)_$(GITRELEASE)
+PRGNAME = $(PRG_NAME)
+# Uncomment if git tag is in use
+GIT_TAG = "$(shell git describe --tags)"
+PRGNAME = $(PRG_NAME)_$(GIT_TAG)
 
 AR = avr-ar
 CC = avr-gcc
@@ -68,4 +70,4 @@ clean:
 	$(REMOVE) *.elf *.hex $(objects)
 
 version:
-	git describe --tags
+	# Last Git tag: $(GITRELEASE)
