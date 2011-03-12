@@ -64,14 +64,28 @@ void uart_shutdown(const uint8_t port)
 	}
 }
 
-char uart_getchar(const uint8_t port)
+char uart_getchar(const uint8_t port, const uint8_t locked)
 {
-	if (port) {
-		loop_until_bit_is_set(UCSR1A, RXC1);
-		return(UDR1);
+	if (locked) {
+		if (port) {
+			loop_until_bit_is_set(UCSR1A, RXC1);
+			return(UDR1);
+		} else {
+			loop_until_bit_is_set(UCSR0A, RXC0);
+			return(UDR0);
+		}
 	} else {
-		loop_until_bit_is_set(UCSR0A, RXC0);
-		return(UDR0);
+		if (port) {
+			if (bit_is_set(UCSR1A, RXC1))
+				return(UDR1);
+			else
+				return(0);
+		} else {
+			if (bit_is_set(UCSR0A, RXC0))
+				return(UDR0);
+			else
+				return(0);
+		}
 	}
 }
 

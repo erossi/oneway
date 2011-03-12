@@ -29,7 +29,8 @@
 
 #include "led.h"
 #include "uart.h"
+#include "debug.h"
 
-void slave(void);
+void slave(struct debug_t *debug);
 
 #endif

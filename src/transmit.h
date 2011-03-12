@@ -29,7 +29,8 @@
 
 #include "led.h"
 #include "uart.h"
+#include "debug.h"
 
-void master(void);
+void master(struct debug_t *debug);
 
 #endif

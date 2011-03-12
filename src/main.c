@@ -30,6 +30,7 @@
 #include <util/delay.h>
 #include "led.h"
 #include "uart.h"
+#include "debug.h"
 
 #ifdef SLAVE
 #include "receive.h"
@@ -41,20 +42,23 @@
 
 int main(void)
 {
+	struct debug_t *debug;
+
 	/* Init sequence, turn on both led */
 	led_init();
 	uart_init(1);
+	debug = debug_init();
 	AU_DDR |= _BV(AU_ENABLE) | _BV(AU_TXRX);
 	led_set(BOTH, OFF);
 
 	sei();
 
 #ifdef MASTER
-	master();
+	master(debug);
 #endif
 
 #ifdef SLAVE
-	slave();
+	slave(debug);
 #endif
 
 	cli();

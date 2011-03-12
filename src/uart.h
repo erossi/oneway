@@ -19,7 +19,7 @@
 #define _UART_H_
 
 /* UART baud rate */
-#define UART_BAUD_0 1200
+#define UART_BAUD_0 9600
 #define UART_BAUD_1 1200
 #define UART_RXBUF_SIZE 64
 #define UART_TXBUF_SIZE 64
@@ -40,7 +40,7 @@ struct uartStruct {
 
 void uart_init(const uint8_t port);
 void uart_shutdown(const uint8_t port);
-char uart_getchar(const uint8_t port);
+char uart_getchar(const uint8_t port, const uint8_t locked);
 void uart_putchar(const uint8_t port, const char c);
 void uart_printstr(const uint8_t port, const char *s);
 

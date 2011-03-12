@@ -24,6 +24,7 @@ CFLAGS = $(INC) -Wall -Wstrict-prototypes -pedantic -mmcu=$(MCU) -O$(OPTLEV) -D 
 LFLAGS =
 
 PRGNAME = $(PRG_NAME)
+GIT_TAG = "Unknown"
 # Uncomment if git tag is in use
 GIT_TAG = "$(shell git describe --tags)"
 PRGNAME = $(PRG_NAME)_$(GIT_TAG)
@@ -36,7 +37,8 @@ DUDEDEV = stk500v2
 DUDEPORT = usb
 DUDEDEV = avrispmkII
 # Use sudo for USB avrispmkII
-DUDE = sudo avrdude -c $(DUDEDEV) -p $(MCU) -P $(DUDEPORT) -e -U flash:w:$(PRGNAME).hex
+DUDEM = sudo avrdude -c $(DUDEDEV) -p $(MCU) -P $(DUDEPORT) -e -U flash:w:$(PRGNAME)_master.hex
+DUDES = sudo avrdude -c $(DUDEDEV) -p $(MCU) -P $(DUDEPORT) -e -U flash:w:$(PRGNAME)_slave.hex
 
 OBJCOPY = avr-objcopy -j .text -j .data -O ihex
 OBJDUMP = avr-objdump
@@ -44,7 +46,7 @@ SIZE = avr-size
 
 REMOVE = rm -f
 
-objects = led.o uart.o
+objects = led.o uart.o debug.o
 rx_obj = $(objects) receive.o
 tx_obj = $(objects) transmit.o
 
@@ -63,13 +65,16 @@ slave: $(rx_obj)
 	$(OBJCOPY) $(PRGNAME)_slave.elf $(PRGNAME)_slave.hex
 
 debug.o:
-	$(CC) $(CFLAGS) -D GITREL=$(GITRELEASE) -c debug.c
+	$(CC) $(CFLAGS) -D GITREL=\"$(GIT_TAG)\" -c debug.c
 
-program:
-	$(DUDE)
+progm:
+	$(DUDEM)
+
+progs:
+	$(DUDES)
 
 clean:
 	$(REMOVE) *.elf *.hex $(rx_obj) $(tx_obj)
 
 version:
-	# Last Git tag: $(GITRELEASE)
+	# Last Git tag: $(GIT_TAG)

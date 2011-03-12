@@ -20,12 +20,17 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <avr/io.h>
 #include <util/delay.h>
 #include "transmit.h"
 
-void master(void)
+void master(struct debug_t *debug)
 {
+	long count;
+
+	count = 0;
+
 	AU_PORT |= _BV(AU_ENABLE);
 	_delay_us(20);
 
@@ -38,6 +43,11 @@ void master(void)
 		uart_printstr(1, "turn_1");
 		_delay_ms(50);
 		uart_printstr(1, "turn_1");
+
+		debug->line = ltoa(count, debug->string, 10);
+		strcat(debug->line, "\n");
+		debug_print(debug);
+		count++;
 
 		/* Disable TX signal */
 		_delay_ms(1);
