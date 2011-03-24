@@ -77,6 +77,8 @@ struct debug_t *debug_init(void)
 	struct debug_t *debug;
 
 	uart_init(0);
+	uart_tx(0, 1);
+	uart_rx(0, 1);
 	debug = malloc(sizeof(struct debug_t));
 	debug->line = malloc(MAX_LINE_LENGHT);
 	debug->string = malloc(MAX_STRING_LENGHT);

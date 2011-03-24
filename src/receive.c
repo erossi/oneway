@@ -45,6 +45,8 @@ void slave(struct debug_t *debug)
 	AU_PORT |= _BV(AU_ENABLE);
 	_delay_us(200);
 
+	uart_rx(1, 1);
+
 	while (1) {
 		i=0;
 		*buff = uart_getchar(1, 1);

@@ -18,6 +18,34 @@
 #include <avr/io.h>
 #include "uart.h"
 
+void uart_tx(const uint8_t port, const uint8_t enable)
+{
+	if (port)
+		if (enable)
+			UCSR1B |= _BV(TXEN1);
+		else
+			UCSR1B &= ~_BV(TXEN1);
+	else
+		if (enable)
+			UCSR0B |= _BV(TXEN0);
+		else
+			UCSR0B &= ~_BV(TXEN0);
+}
+
+void uart_rx(const uint8_t port, const uint8_t enable)
+{
+	if (port)
+		if (enable)
+			UCSR1B |= _BV(RXEN1);
+		else
+			UCSR1B &= ~_BV(RXEN1);
+	else
+		if (enable)
+			UCSR0B |= _BV(RXEN0);
+		else
+			UCSR0B &= ~_BV(RXEN0);
+}
+
 void uart_init(const uint8_t port)
 {
 	if (port) {
@@ -29,8 +57,6 @@ void uart_init(const uint8_t port)
 		UBRR1L = (F_CPU / (16UL * UART_BAUD_1)) - 1;
 #endif
 
-		/*! tx/rx enable */
-		UCSR1B = _BV(TXEN1) | _BV(RXEN1);
 		/* 8n2 */
 		UCSR1C = _BV(USBS1) | _BV(UCSZ10) | _BV(UCSZ11);
 	} else {
@@ -42,8 +68,6 @@ void uart_init(const uint8_t port)
 		UBRR0L = (F_CPU / (16UL * UART_BAUD_0)) - 1;
 #endif
 
-		/*! tx/rx enable */
-		UCSR0B = _BV(TXEN0) | _BV(RXEN0);
 		/* 8n2 */
 		UCSR0C = _BV(USBS0) | _BV(UCSZ00) | _BV(UCSZ01);
 	}

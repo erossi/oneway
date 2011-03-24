@@ -38,6 +38,9 @@ struct uartStruct {
         volatile uint8_t rx_flag, tx_flag, rxIdx, txIdx;
 };
 
+
+void uart_tx(const uint8_t port, const uint8_t enable);
+void uart_rx(const uint8_t port, const uint8_t enable);
 void uart_init(const uint8_t port);
 void uart_shutdown(const uint8_t port);
 char uart_getchar(const uint8_t port, const uint8_t locked);
