@@ -78,3 +78,6 @@ clean:
 
 version:
 	# Last Git tag: $(GIT_TAG)
+
+doc:
+	cd ../doc && doxygen

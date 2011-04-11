@@ -16,7 +16,7 @@
  */
 
 /*! \file transmit.c
-  \brief Main.
+  \brief The TX code start here.
  */
 
 #include <stdlib.h>
@@ -25,15 +25,21 @@
 #include <util/delay.h>
 #include "transmit.h"
 
-/* Enable TX signal */
+/*! \brief Enable TX signal. */
 void start_tx(void)
 {
+	/*! Enable the serial port */
 	uart_tx(1, 1);
+	/*! Enable the transmit pin on the rtx only module
+	as described in the datasheet with delay timing. */
 	AU_PORT |= _BV(AU_TXRX);
 	_delay_us(400);
+
+	/*! add another delay for opening the squelch in the receiver. */
+	_delay_ms(10);
 }
 
-/* Disable TX signal */
+/*! \brief Disable TX signal */
 void stop_tx(void)
 {
 	uart_tx(1, 0);
@@ -46,16 +52,13 @@ void master(struct debug_t *debug)
 	long count;
 
 	count = 0;
-
 	AU_PORT |= _BV(AU_ENABLE);
 	_delay_us(20);
 
 	while (1) {
 		start_tx();
 		led_set(RED, ON);
-		uart_printstr(1, "turn_1");
-		_delay_ms(50);
-		uart_printstr(1, "turn_1");
+		uart_printstr(1, "xxxturn_1");
 		_delay_ms(1);
 		stop_tx();
 
@@ -63,9 +66,7 @@ void master(struct debug_t *debug)
 
 		start_tx();
 		led_set(BOTH, OFF);
-		uart_printstr(1, "turn_0");
-		_delay_ms(50);
-		uart_printstr(1, "turn_0");
+		uart_printstr(1, "xxxturn_0");
 		_delay_ms(1);
 		stop_tx();
 

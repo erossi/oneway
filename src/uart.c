@@ -18,6 +18,13 @@
 #include <avr/io.h>
 #include "uart.h"
 
+/*! \file uart.c
+  \brief low level interface to the serial port */
+
+/*! \brief enable/disable the trasmit part of a serial port.
+  \param port Serial port number (0 or 1)
+  \param enable 0 = disable, 1 = enable
+ */
 void uart_tx(const uint8_t port, const uint8_t enable)
 {
 	if (port)
@@ -32,6 +39,10 @@ void uart_tx(const uint8_t port, const uint8_t enable)
 			UCSR0B &= ~_BV(TXEN0);
 }
 
+/*! \brief enable/disable the receive part of a serial port.
+  \param port Serial port number (0 or 1)
+  \param enable 0 = disable, 1 = enable
+ */
 void uart_rx(const uint8_t port, const uint8_t enable)
 {
 	if (port)
@@ -113,9 +124,12 @@ char uart_getchar(const uint8_t port, const uint8_t locked)
 	}
 }
 
-/*!
- * Send character c down the UART Tx, wait until tx holding register
- * is empty.
+/*! \brief send a single char down to the serial port.
+
+  Send character c down the UART Tx, wait until tx holding register
+  is empty.
+  \param port serial port 0 or 1.
+  \param c char to send.
  */
 void uart_putchar(const uint8_t port, const char c)
 {
@@ -131,18 +145,14 @@ void uart_putchar(const uint8_t port, const char c)
   }
 }
 
-/*!
- * Send a C (NUL-terminated) string down the UART Tx.
+/*! Send a C (NUL-terminated) string to the UART Tx.
+
+  \param port serial port 0 or 1.
+  \param s NULL terminated string.
+  \note It must be a \0 terminated string.
  */
 void uart_printstr(const uint8_t port, const char *s)
 {
-
-  while (*s) {
-/*
-      if (*s == '\n')
-	uart_putchar(port, '\r');
-*/
-
-      uart_putchar(port, *s++);
-    }
+	while (*s)
+		uart_putchar(port, *s++);
 }
