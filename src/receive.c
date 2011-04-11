@@ -50,6 +50,7 @@ void slave(struct debug_t *debug)
 	while (1) {
 		i=0;
 		*buff = uart_getchar(1, 1);
+		uart_putchar(0, *buff);
 		
 		if (*buff == 't') {
 			for (i=1; i<6; i++)
