@@ -1,2 +1,6 @@
 .todo
+*.elf
+*.hex
+*.o
+*.swp
 doc/html

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <avr/io.h>
+#include <util/crc16.h>
 #include <util/delay.h>
 #include "transmit.h"
 
@@ -47,34 +48,110 @@ void stop_tx(void)
 	_delay_us(400);
 }
 
+void tx_str(const char *str)
+{
+	led_set(RED, ON);
+	start_tx();
+	uart_printstr(1, "xxx");
+	uart_printstr(1, str);
+	_delay_ms(1);
+	stop_tx();
+	led_set(RED, OFF);
+}
+
+uint8_t crc8_str(char *str)
+{
+	uint8_t i, crc8;
+
+	crc8 = 0;
+
+	for (i=0; i<strlen(str); i++)
+		crc8 = _crc_ibutton_update(crc8, *(str + i));
+
+	return(crc8);
+}
+
+/*! \brief Check if the command received by the host is correct.
+
+  A vaild command is in the form of:
+  AAAAPPC:RR\n
+  where
+  AAAA: Client address in HEX (2 byte)
+  PP:   pin number in HEX (1 byte)
+  C: command: 2 On , 3 Off
+  RR crc calculated before ":"
+
+  if It is not correct clear the cmd string and return FALSE.
+ */
+uint8_t host_check_command(char *cmd)
+{
+	uint8_t err=0;
+
+	if (strlen(cmd) != 10)
+		err |= _BV(1);
+
+	if (*(cmd + 7) != ':')
+		err |= _BV(2);
+
+	/*! \todo Do the crc checksum on the string. */
+
+	if (err)
+		*cmd = 0;
+	else
+		*(cmd + 7) = 0;
+
+	return (!err);
+}
+
+/*! \brief wait until a command is entered.
+
+  \sa host_check_command()
+  \param cmd pre-allocated space for the returned string.
+ */
+void host_get_command(char *cmd)
+{
+	uint8_t i = 0;
+
+	do {
+		*(cmd + i) = uart_getchar(0, 1);
+		i++;
+	} while ((i<MAX_CMD_LENGHT) && (*(cmd + i - 1) != '\n'));
+
+	/*! Substitute '\n' with a \0 to terminate the string or
+	 put a \0 at cmd[19] */
+	i--;
+	*(cmd + i) = 0;
+}
+
 void master(struct debug_t *debug)
 {
-	long count;
+	char *cmd;
+	char *crc8s;
+	uint8_t crc8;
 
-	count = 0;
+	cmd = malloc(MAX_CMD_LENGHT);
+	/* Re-use pre-allocated space */
+	crc8s = debug->string;
+
 	AU_PORT |= _BV(AU_ENABLE);
 	_delay_us(20);
 
+	led_set(GREEN, ON);
+
 	while (1) {
-		start_tx();
-		led_set(RED, ON);
-		uart_printstr(1, "xxxturn_1");
-		_delay_ms(1);
-		stop_tx();
+		host_get_command(cmd);
 
-		_delay_ms(2000);
-
-		start_tx();
-		led_set(BOTH, OFF);
-		uart_printstr(1, "xxxturn_0");
-		_delay_ms(1);
-		stop_tx();
-
-		debug->line = ltoa(count, debug->string, 10);
-		strcat(debug->line, "\n");
-		debug_print(debug);
-		count++;
-
-		_delay_ms(2000);
+		if (host_check_command(cmd)) {
+			crc8 = crc8_str(cmd);
+			crc8s = utoa(crc8, crc8s, 16);
+			cmd = strcat(cmd, crc8s);
+			tx_str(cmd);
+			debug_print_P(PSTR("ok"), debug);
+		} else {
+			debug_print_P(PSTR("ko"), debug);
 		}
+	}
+
+	free(crc8s);
+	free(cmd);
 }

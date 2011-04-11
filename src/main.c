@@ -50,6 +50,7 @@ int main(void)
 	debug = debug_init();
 	AU_DDR |= _BV(AU_ENABLE) | _BV(AU_TXRX);
 	led_set(BOTH, OFF);
+	led_set(GREEN, ON);
 
 	sei();
 
