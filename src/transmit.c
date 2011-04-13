@@ -81,7 +81,8 @@ uint8_t crc8_str(char *str)
   C: command: 2 On , 3 Off
   RR crc calculated before ":"
 
-  if It is not correct clear the cmd string and return FALSE.
+  if cmd is not correct clear the cmd string and return FALSE
+  else if cmd is ok, modify cmd and keep only AAAAPPC.
  */
 uint8_t host_check_command(char *cmd)
 {
@@ -115,7 +116,7 @@ void host_get_command(char *cmd)
 	do {
 		*(cmd + i) = uart_getchar(0, 1);
 		i++;
-	} while ((i<MAX_CMD_LENGHT) && (*(cmd + i - 1) != '\n'));
+	} while ((i<MAX_CMD_LENGHT) && (*(cmd + i - 1) != '\r'));
 
 	/*! Substitute '\n' with a \0 to terminate the string or
 	 put a \0 at cmd[19] */
@@ -146,9 +147,9 @@ void master(struct debug_t *debug)
 			crc8s = utoa(crc8, crc8s, 16);
 			cmd = strcat(cmd, crc8s);
 			tx_str(cmd);
-			debug_print_P(PSTR("ok"), debug);
+			debug_print_P(PSTR("ok\n"), debug);
 		} else {
-			debug_print_P(PSTR("ko"), debug);
+			debug_print_P(PSTR("ko\n"), debug);
 		}
 	}
 
