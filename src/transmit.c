@@ -47,12 +47,12 @@ void stop_tx(void)
 	_delay_us(400);
 }
 
-void tx_str(const char *str)
+void tx_str(const char *str, const uint8_t port)
 {
 	led_set(RED, ON);
 	start_tx();
-	uart_printstr(1, "xxx");
-	uart_printstr(1, str);
+	uart_printstr(port, "xxx");
+	uart_printstr(port, str);
 	_delay_ms(1);
 	stop_tx();
 	led_set(RED, OFF);
@@ -147,9 +147,16 @@ void master(struct debug_t *debug)
 
 		if (host_check_command(htv)) {
 			crc8 = crc8_str(htv->x10str);
-			crc8s = utoa(crc8, crc8s, 16);
+
+			if (crc8 < 0x10) {
+				strcpy_P(crc8s, PSTR("0"));
+				strcat(crc8s, utoa(crc8, htv->substr, 16));
+			} else {
+				crc8s = utoa(crc8, crc8s, 16);
+			}
+
 			htv->x10str = strcat(htv->x10str, crc8s);
-			tx_str(htv->x10str);
+			tx_str(htv->x10str, 0);
 
 			/* Debug only
 			strcpy_P(debug->line, PSTR("Addr: "));
