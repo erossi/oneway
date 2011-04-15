@@ -39,13 +39,17 @@ conversions have to be made from int to string etc. */
 #define PRINT_VALUE_X_LINE 16
 #define SEC_FOR_Y 5
 
-/*! The main debug structure, it has to be allocated,
+/*! \struct debug_t
+  The main debug structure, it has to be allocated,
   eventually, if debug is not active, you can avoid the
   allocation of the two members char *.
   */
 struct debug_t {
+	/*! A string of MAX_LINE_LENGHT chars to be printed. */
 	char *line;
+	/*! A string buffer used to help compose the line. */
 	char *string;
+	/*! debug status [0, 1] */
 	uint8_t active;
 };
 

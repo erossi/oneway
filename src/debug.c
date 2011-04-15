@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*! \file debug.c
+  \brief printing to terminal functions.
+  */
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,6 +25,10 @@
 #include <util/delay.h>
 #include "debug.h"
 
+/*! Print a string taken directly from the EEPROM
+  avoiding memory allocation.
+  \param string the PSTR() string to be printed.
+ */
 void debug_print_P(PGM_P string, struct debug_t *debug)
 {
 	if (debug->active) {
