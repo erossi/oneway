@@ -15,26 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*! \file transmit.h
-  \brief Utility for tx.
+/*! \file htv.h
+  \brief Main struct of the project and eventually defaults.
   */
 
-#ifndef TX_H
-#define TX_H
+#ifndef HTV_H
+#define HTV_H
 
-#define AU_PORT PORTA
-#define AU_DDR DDRA
-#define AU_ENABLE PA5
-#define AU_TXRX PA6
+/*! structure of the data packet */
+struct htv_t {
+	/*! full 16 bit address */
+	uint16_t address;
+	/*! high byte of the address */
+	uint8_t haddr;
+	/*! low byte of the address */
+	uint8_t laddr;
+	/*! pin code */
+	uint8_t pin;
+	/*! command */
+	uint8_t cmd;
+	/*! 1net crc16 from the host */
+	uint16_t crc16;
+	/*! crc8 to the client */
+	uint8_t crc8;
+	/*! x10 like string from the host */
+	char *x10str;
+	/*! string space used during conversion */
+	char *substr;
+};
 
-#define MAX_CMD_LENGHT 20
-
-#include "led.h"
-#include "uart.h"
-#include "debug.h"
-#include "1net_crc.h"
-#include "htv.h"
-
-void master(struct debug_t *debug);
+uint8_t crc8_str(char *str);
+void str_to_htv(struct htv_t *htv);
 
 #endif

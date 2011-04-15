@@ -46,9 +46,9 @@ SIZE = avr-size
 
 REMOVE = rm -f
 
-objects = led.o uart.o debug.o
+objects = led.o uart.o debug.o htv.o
 rx_obj = $(objects) receive.o
-tx_obj = $(objects) transmit.o
+tx_obj = $(objects) 1net_crc.o transmit.o
 
 .PHONY: clean indent
 .SILENT: help
