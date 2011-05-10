@@ -37,6 +37,10 @@ uint8_t crc8_str(char *str)
 	return(crc8);
 }
 
+/*! \brief convert a pre-formatted string to the struct htv.
+ *
+ * \note the string is stored in the struct itself.
+ */
 void str_to_htv(struct htv_t *htv)
 {
 	/* Full address */
@@ -53,7 +57,10 @@ void str_to_htv(struct htv_t *htv)
 	/* cmd code */
 	strlcpy(htv->substr, htv->x10str + 6, 2);
 	htv->cmd = strtoul(htv->substr, 0, 16);
+
 	/* crc16 */
-	strlcpy(htv->substr, htv->x10str + 8, 3);
-	htv->crc16 = strtoul(htv->substr, 0, 16);
+	if (strlen(htv->x10str) > 7) {
+		strlcpy(htv->substr, htv->x10str + 8, 3);
+		htv->crc16 = strtoul(htv->substr, 0, 16);
+	}
 }

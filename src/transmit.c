@@ -47,11 +47,17 @@ void stop_tx(void)
 	_delay_us(400);
 }
 
+/*! \brief transmit a string to the air
+ *
+ * Send the string with the header to the air.
+ * \param str the string to be sent.
+ * \param port the serial port.
+ */
 void tx_str(const char *str, const uint8_t port)
 {
 	led_set(RED, ON);
 	start_tx();
-	uart_printstr(port, "xxx");
+	uart_printstr(port, TX_HEAD);
 	uart_printstr(port, str);
 	_delay_ms(1);
 	stop_tx();
@@ -76,26 +82,35 @@ uint8_t host_check_command(struct htv_t *htv)
 	uint8_t err=0;
 	uint16_t crc;
 
-	/* strlen error */
-	if (strlen(htv->x10str) != 10)
-		err |= _BV(1);
+	switch (strlen(htv->x10str)) {
+		/* str without 1net crc */
+		case 7:
+			/* convert the string into htv struct */
+			str_to_htv(htv);
+			break;
+		case 10:
+			/* missing ":" on 7th char error */
+			if (*(htv->x10str + 7) != ':')
+				err |= _BV(2);
 
-	/* missing ":" on 7th char error */
-	if (*(htv->x10str + 7) != ':')
-		err |= _BV(2);
+			/* convert the string into htv struct */
+			str_to_htv(htv);
 
-	/* convert the string into htv struct */
-	str_to_htv(htv);
+			/*! Do the crc checksum on the string. */
+			crc = one_net_compute_crc(htv->haddr, 0xff);
+			crc = one_net_compute_crc(htv->laddr, crc);
+			crc = one_net_compute_crc(htv->pin, crc);
+			crc = one_net_compute_crc(htv->cmd, crc);
 
-	/*! Do the crc checksum on the string. */
-	crc = one_net_compute_crc(htv->haddr, 0xff);
-	crc = one_net_compute_crc(htv->laddr, crc);
-	crc = one_net_compute_crc(htv->pin, crc);
-	crc = one_net_compute_crc(htv->cmd, crc);
+			/* crc error */
+			if (crc != htv->crc16)
+				err |= _BV(3);
 
-	/* crc error */
-	if (crc != htv->crc16)
-		err |= _BV(3);
+			break;
+		default:
+			/* strlen error */
+			err |= _BV(1);
+	}
 
 	if (err)
 		*htv->x10str = 0;
