@@ -22,18 +22,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <avr/io.h>
+#include <avr/eeprom.h>
 #include <util/delay.h>
+
 #include "receive.h"
 
-void slave(struct debug_t *debug)
+void start_rx(void)
 {
-	char *buff;
-	int i;
-	long count;
-
-	buff = malloc(10);
-	count=0;
-
 	AU_PORT |= _BV(AU_ENABLE);
 	_delay_us(20);
 	AU_PORT |= _BV(AU_TXRX);
@@ -46,22 +41,56 @@ void slave(struct debug_t *debug)
 	_delay_us(200);
 
 	uart_rx(1, 1);
+}
+
+/*! The HTV network address */
+uint16_t EEMEM EE_address;
+/*! The ~EE_address to check the correct value of the address */
+uint16_t EEMEM EE_naddress;
+
+void slave(struct debug_t *debug)
+{
+	struct htv_t *htv;
+	char *crc8s;
+
+	int i;
+	long count;
+
+	htv = malloc(sizeof(struct htv_t));
+	htv->substr = malloc(5);
+	htv->x10str = malloc(MAX_CMD_LENGHT);
+	/* Re-use pre-allocated space */
+	crc8s = debug->string;
+
+	AU_PORT |= _BV(AU_ENABLE);
+	_delay_us(20);
+
+	led_set(GREEN, ON);
+
+	count=0;
+
+	htv->address = eeprom_read_word(&EE_address);
+
+	/* check the if the network address is correct */
+	if (htv->address != ~(eeprom_read_word(&EE_naddress))) {
+		htv->address = 0;
+	}
 
 	while (1) {
 		i=0;
-		*buff = uart_getchar(1, 1);
-		uart_putchar(0, *buff);
+		*htv->x10str = uart_getchar(1, 1);
+		uart_putchar(0, *htv->x10str);
 		
-		if (*buff == 't') {
+		if (*htv->x10str == 't') {
 			for (i=1; i<6; i++)
-				*(buff + i) = uart_getchar(1, 1);
+				*(htv->x10str + i) = uart_getchar(1, 1);
 
-			*(buff + 6) = 0;
+			*(htv->x10str + 6) = 0;
 
-			if (strstr(buff, "turn_0"))
+			if (strstr(htv->x10str, "turn_0"))
 				led_set(BOTH, OFF);
 
-			if (strstr(buff, "turn_1")) {
+			if (strstr(htv->x10str, "turn_1")) {
 				led_set(GREEN, ON);
 				debug->line = ltoa(count, debug->string, 10);
 				strcat(debug->line, "\n");
@@ -71,5 +100,8 @@ void slave(struct debug_t *debug)
 		}
 	}
 
-	free(buff);
+	free(crc8s);
+	free(htv->x10str);
+	free(htv->substr);
+	free(htv);
 }

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*! \file slave.h
+/*! \file receive.h
   \brief Utility for rx.
   */
 
@@ -30,6 +30,7 @@
 #include "led.h"
 #include "uart.h"
 #include "debug.h"
+#include "htv.h"
 
 void slave(struct debug_t *debug);
 
