@@ -144,7 +144,6 @@ void master(struct debug_t *debug)
 {
 	struct htv_t *htv;
 	char *crc8s;
-	uint8_t crc8;
 
 	htv = malloc(sizeof(struct htv_t));
 	htv->substr = malloc(5);
@@ -161,13 +160,13 @@ void master(struct debug_t *debug)
 		host_get_command(htv->x10str);
 
 		if (host_check_command(htv)) {
-			crc8 = crc8_str(htv->x10str);
+			htv->crc8 = crc8_str(htv->x10str);
 
-			if (crc8 < 0x10) {
+			if (htv->crc8 < 0x10) {
 				strcpy_P(crc8s, PSTR("0"));
-				strcat(crc8s, utoa(crc8, htv->substr, 16));
+				strcat(crc8s, utoa(htv->crc8, htv->substr, 16));
 			} else {
-				crc8s = utoa(crc8, crc8s, 16);
+				crc8s = utoa(htv->crc8, crc8s, 16);
 			}
 
 			htv->x10str = strcat(htv->x10str, crc8s);

@@ -28,7 +28,6 @@
 #define AU_TXRX PA6
 
 #define TX_HEAD "xxx"
-#define MAX_CMD_LENGHT 20
 
 #include "led.h"
 #include "uart.h"

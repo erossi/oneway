@@ -22,6 +22,8 @@
 #ifndef HTV_H
 #define HTV_H
 
+#define MAX_CMD_LENGHT 20
+
 /*! structure of the data packet */
 struct htv_t {
 	/*! full 16 bit address */
