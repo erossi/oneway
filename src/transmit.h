@@ -32,7 +32,6 @@
 #include "led.h"
 #include "uart.h"
 #include "debug.h"
-#include "1net_crc.h"
 #include "htv.h"
 
 void master(struct debug_t *debug);

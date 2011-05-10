@@ -23,9 +23,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <util/crc16.h>
+#include <avr/io.h>
+
 #include "htv.h"
 
-uint8_t crc8_str(char *str)
+/*! \brief return the crc8 of the string.
+ *
+ * \param str the string
+ */
+uint8_t crc8_str(const char *str)
 {
 	uint8_t i, crc8;
 
@@ -61,6 +67,68 @@ void str_to_htv(struct htv_t *htv)
 	/* crc16 */
 	if (strlen(htv->x10str) > 7) {
 		strlcpy(htv->substr, htv->x10str + 8, 3);
-		htv->crc16 = strtoul(htv->substr, 0, 16);
+		htv->crc = strtoul(htv->substr, 0, 16);
 	}
+}
+
+/*! \brief check the validity of the x10str command string.
+ *
+  A vaild command is in the form of:
+  AAAAPPC:RR\n
+  where
+  AAAA: Client address in HEX (2 byte)
+  PP:   pin number in HEX (1 byte)
+  C: command: 2 On , 3 Off
+  RR crc calculated before ":"
+
+  if cmd is not correct clear the cmd string and return FALSE
+  else if cmd is ok, modify cmd and keep only AAAAPPC.
+
+ * \param crctype true - 1net crc, false - crc8.
+ */
+uint8_t htv_check_cmd(struct htv_t *htv, const uint8_t crctype)
+{
+	uint8_t err=0;
+	uint8_t crc;
+
+	switch (strlen(htv->x10str)) {
+		/* str without 1net crc */
+		case 7:
+			/* convert the string into htv struct */
+			str_to_htv(htv);
+			break;
+		case 10:
+			/* missing ":" on 7th char error */
+			if (*(htv->x10str + 7) != ':')
+				err |= _BV(2);
+
+			/* convert the string into htv struct */
+			str_to_htv(htv);
+
+			if (crctype) {
+				/*! Do the crc checksum on the string. */
+				crc = one_net_compute_crc(htv->haddr, 0xff);
+				crc = one_net_compute_crc(htv->laddr, crc);
+				crc = one_net_compute_crc(htv->pin, crc);
+				crc = one_net_compute_crc(htv->cmd, crc);
+			} else {
+				crc = crc8_str(htv->x10str);
+			}
+
+			/* crc error */
+			if (crc != htv->crc)
+				err |= _BV(3);
+
+			break;
+		default:
+			/* strlen error */
+			err |= _BV(1);
+	}
+
+	if (err)
+		*htv->x10str = 0;
+	else
+		*(htv->x10str + 7) = 0;
+
+	return (!err);
 }

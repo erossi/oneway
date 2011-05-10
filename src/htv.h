@@ -22,6 +22,8 @@
 #ifndef HTV_H
 #define HTV_H
 
+#include "1net_crc.h"
+
 #define MAX_CMD_LENGHT 20
 
 /*! structure of the data packet */
@@ -36,17 +38,16 @@ struct htv_t {
 	uint8_t pin;
 	/*! command */
 	uint8_t cmd;
-	/*! 1net crc16 from the host */
-	uint16_t crc16;
-	/*! crc8 to the client */
-	uint8_t crc8;
+	/*! crc */
+	uint8_t crc;
 	/*! x10 like string from the host */
 	char *x10str;
 	/*! string space used during conversion */
 	char *substr;
 };
 
-uint8_t crc8_str(char *str);
+uint8_t crc8_str(const char *str);
 void str_to_htv(struct htv_t *htv);
+uint8_t htv_check_cmd(struct htv_t *htv, const uint8_t crctype);
 
 #endif

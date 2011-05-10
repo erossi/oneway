@@ -64,62 +64,6 @@ void tx_str(const char *str, const uint8_t port)
 	led_set(RED, OFF);
 }
 
-/*! \brief Check if the command received by the host is correct.
-
-  A vaild command is in the form of:
-  AAAAPPC:RR\n
-  where
-  AAAA: Client address in HEX (2 byte)
-  PP:   pin number in HEX (1 byte)
-  C: command: 2 On , 3 Off
-  RR crc calculated before ":"
-
-  if cmd is not correct clear the cmd string and return FALSE
-  else if cmd is ok, modify cmd and keep only AAAAPPC.
- */
-uint8_t host_check_command(struct htv_t *htv)
-{
-	uint8_t err=0;
-	uint16_t crc;
-
-	switch (strlen(htv->x10str)) {
-		/* str without 1net crc */
-		case 7:
-			/* convert the string into htv struct */
-			str_to_htv(htv);
-			break;
-		case 10:
-			/* missing ":" on 7th char error */
-			if (*(htv->x10str + 7) != ':')
-				err |= _BV(2);
-
-			/* convert the string into htv struct */
-			str_to_htv(htv);
-
-			/*! Do the crc checksum on the string. */
-			crc = one_net_compute_crc(htv->haddr, 0xff);
-			crc = one_net_compute_crc(htv->laddr, crc);
-			crc = one_net_compute_crc(htv->pin, crc);
-			crc = one_net_compute_crc(htv->cmd, crc);
-
-			/* crc error */
-			if (crc != htv->crc16)
-				err |= _BV(3);
-
-			break;
-		default:
-			/* strlen error */
-			err |= _BV(1);
-	}
-
-	if (err)
-		*htv->x10str = 0;
-	else
-		*(htv->x10str + 7) = 0;
-
-	return (!err);
-}
-
 /*! \brief wait until a command is entered.
 
   \sa host_check_command()
@@ -159,14 +103,18 @@ void master(struct debug_t *debug)
 	while (1) {
 		host_get_command(htv->x10str);
 
-		if (host_check_command(htv)) {
-			htv->crc8 = crc8_str(htv->x10str);
+		if (htv_check_cmd(htv, 1)) {
+			/* calculate crc8 of the command */
+			htv->crc = crc8_str(htv->x10str);
 
-			if (htv->crc8 < 0x10) {
+			/* string leght check and prepend a '0' if
+			 * needed.
+			 */
+			if (htv->crc < 0x10) {
 				strcpy_P(crc8s, PSTR("0"));
-				strcat(crc8s, utoa(htv->crc8, htv->substr, 16));
+				strcat(crc8s, utoa(htv->crc, htv->substr, 16));
 			} else {
-				crc8s = utoa(htv->crc8, crc8s, 16);
+				crc8s = utoa(htv->crc, crc8s, 16);
 			}
 
 			htv->x10str = strcat(htv->x10str, crc8s);
