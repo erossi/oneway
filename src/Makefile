@@ -80,4 +80,4 @@ version:
 	# Last Git tag: $(GIT_TAG)
 
 doc:
-	cd ../doc && doxygen
+	cd ../doc && ( cat Doxyfile ; echo "PROJECT_NUMBER=$(GIT_TAG)" ) | doxygen -
