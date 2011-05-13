@@ -114,3 +114,42 @@ void debug_free(struct debug_t *debug)
 
 	free(debug);
 }
+
+void debug_print_htv(struct htv_t *htv, struct debug_t *debug)
+{
+	strcpy_P(debug->line, PSTR("\nAddr: "));
+	debug->string = utoa(htv->address, debug->string, 16);
+	strcat(debug->line, debug->string);
+	strcat_P(debug->line, PSTR("\n"));
+	debug_print(debug);
+
+	strcpy_P(debug->line, PSTR("Addr H: "));
+	debug->string = utoa(htv->haddr, debug->string, 16);
+	strcat(debug->line, debug->string);
+	strcat_P(debug->line, PSTR("\n"));
+	debug_print(debug);
+
+	strcpy_P(debug->line, PSTR("Addr L: "));
+	debug->string = utoa(htv->laddr, debug->string, 16);
+	strcat(debug->line, debug->string);
+	strcat_P(debug->line, PSTR("\n"));
+	debug_print(debug);
+
+	strcpy_P(debug->line, PSTR("Pin: "));
+	debug->string = utoa(htv->pin, debug->string, 16);
+	strcat(debug->line, debug->string);
+	strcat_P(debug->line, PSTR("\n"));
+	debug_print(debug);
+
+	strcpy_P(debug->line, PSTR("Cmd: "));
+	debug->string = utoa(htv->cmd, debug->string, 16);
+	strcat (debug->line, debug->string);
+	strcat_P(debug->line, PSTR("\n"));
+	debug_print(debug);
+
+	strcpy_P(debug->line, PSTR("CRC: "));
+	debug->string = utoa(htv->crc, debug->string, 16);
+	strcat (debug->line, debug->string);
+	strcat_P(debug->line, PSTR("\n"));
+	debug_print(debug);
+}
