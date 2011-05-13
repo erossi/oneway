@@ -22,15 +22,21 @@
 #ifndef RX_H
 #define RX_H
 
-#define AU_PORT PORTA
-#define AU_DDR DDRA
-#define AU_ENABLE PA5
-#define AU_TXRX PA6
-
 #include "led.h"
 #include "uart.h"
 #include "debug.h"
 #include "htv.h"
+
+#define IO_PORT PORTA
+#define IO_DDR DDRA
+/*
+#define IO_PIN0 PA0
+#define IO_PIN1 PA1
+*/
+/* chipcard test, test performed on a different circuit with 
+ * different IO PIN */
+#define IO_PIN0 PA4
+#define IO_PIN1 PA6
 
 void slave(struct debug_t *debug);
 

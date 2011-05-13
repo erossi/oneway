@@ -75,6 +75,8 @@ void host_get_command(char *cmd)
 
 	do {
 		*(cmd + i) = uart_getchar(0, 1);
+		/* echo the char */
+		uart_putchar(0, *(cmd + i));
 		i++;
 	} while ((i<MAX_CMD_LENGHT) && (*(cmd + i - 1) != '\r'));
 
@@ -95,21 +97,29 @@ void master(struct debug_t *debug)
 	/* Re-use pre-allocated space */
 	crc8s = debug->string;
 
+#ifdef HTV_USE_RTX
+	AU_DDR |= _BV(AU_ENABLE) | _BV(AU_TXRX);
 	AU_PORT |= _BV(AU_ENABLE);
 	_delay_us(20);
+#endif
 
+	uart_init(1);
 	led_set(GREEN, ON);
 
 	while (1) {
 		host_get_command(htv->x10str);
 
-		if (htv_check_cmd(htv, 1)) {
-			/* calculate crc8 of the command */
+		/* check the command with crc type 1net */
+		if (!htv_check_cmd(htv, 1)) {
+			/* simplify the tx string to the format
+			 * AAAAP
+			 */
+			*(htv->x10str + 4) = *(htv->x10str + 5);
+			*(htv->x10str + 5) = 0;
+			/* calculate crc8 of AAAAP */
 			htv->crc = crc8_str(htv->x10str);
 
-			/* string leght check and prepend a '0' if
-			 * needed.
-			 */
+			/* if crc is a single digit, prepend a '0' */
 			if (htv->crc < 0x10) {
 				strcpy_P(crc8s, PSTR("0"));
 				strcat(crc8s, utoa(htv->crc, htv->substr, 16));
@@ -117,48 +127,12 @@ void master(struct debug_t *debug)
 				crc8s = utoa(htv->crc, crc8s, 16);
 			}
 
+			/* Convert AAAAP to AAAAP:RR */
+			*(htv->x10str + 5) = ':';
+			*(htv->x10str + 6) = 0;
 			htv->x10str = strcat(htv->x10str, crc8s);
-			tx_str(htv->x10str, 0);
-
-			/* Debug only
-			strcpy_P(debug->line, PSTR("Addr: "));
-			debug->string = utoa(htv->address, debug->string, 16);
-			strcat(debug->line, debug->string);
-			strcat_P(debug->line, PSTR("\n"));
-			debug_print(debug);
-
-			strcpy_P(debug->line, PSTR("Addr H: "));
-			debug->string = utoa(htv->haddr, debug->string, 16);
-			strcat(debug->line, debug->string);
-			strcat_P(debug->line, PSTR("\n"));
-			debug_print(debug);
-
-			strcpy_P(debug->line, PSTR("Addr L: "));
-			debug->string = utoa(htv->laddr, debug->string, 16);
-			strcat(debug->line, debug->string);
-			strcat_P(debug->line, PSTR("\n"));
-			debug_print(debug);
-
-			strcpy_P(debug->line, PSTR("Pin: "));
-			debug->string = utoa(htv->pin, debug->string, 16);
-			strcat(debug->line, debug->string);
-			strcat_P(debug->line, PSTR("\n"));
-			debug_print(debug);
-
-			strcpy_P(debug->line, PSTR("Cmd: "));
-			debug->string = utoa(htv->cmd, debug->string, 16);
-			strcat (debug->line, debug->string);
-			strcat_P(debug->line, PSTR("\n"));
-			debug_print(debug);
-
-			strcpy_P(debug->line, PSTR("CRC16: "));
-			debug->string = utoa(htv->crc16, debug->string, 16);
-			strcat (debug->line, debug->string);
-			strcat_P(debug->line, PSTR("\n"));
-			debug_print(debug);
-			*/
-
-			debug_print_P(PSTR("ok\n"), debug);
+			tx_str(htv->x10str, 1);
+			debug_print_P(PSTR("OK\n"), debug);
 		} else {
 			debug_print_P(PSTR("ko\n"), debug);
 		}

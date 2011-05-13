@@ -22,11 +22,6 @@
 #ifndef TX_H
 #define TX_H
 
-#define AU_PORT PORTA
-#define AU_DDR DDRA
-#define AU_ENABLE PA5
-#define AU_TXRX PA6
-
 #define TX_HEAD "xxx"
 
 #include "led.h"

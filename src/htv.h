@@ -26,13 +26,19 @@
 
 #define MAX_CMD_LENGHT 20
 
+/*#define HTV_USE_RTX */
+#define AU_PORT PORTA
+#define AU_DDR DDRA
+#define AU_ENABLE PA5
+#define AU_TXRX PA6
+
 /*! structure of the data packet */
 struct htv_t {
 	/*! full 16 bit address */
 	uint16_t address;
-	/*! high byte of the address */
+	/*! high byte of the address, used only in 1net crc */
 	uint8_t haddr;
-	/*! low byte of the address */
+	/*! low byte of the address, used only in 1net crc */
 	uint8_t laddr;
 	/*! pin code */
 	uint8_t pin;
@@ -44,6 +50,8 @@ struct htv_t {
 	char *x10str;
 	/*! string space used during conversion */
 	char *substr;
+	/*! eeprom stored rx address */
+	uint16_t ee_addr;
 };
 
 uint8_t crc8_str(const char *str);

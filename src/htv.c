@@ -47,7 +47,7 @@ uint8_t crc8_str(const char *str)
  *
  * \note the string is stored in the struct itself.
  */
-void str_to_htv(struct htv_t *htv)
+void aaaa_to_htv(struct htv_t *htv)
 {
 	/* Full address */
 	strlcpy(htv->substr, htv->x10str, 5);
@@ -57,18 +57,45 @@ void str_to_htv(struct htv_t *htv)
 	htv->haddr = strtoul(htv->substr, 0, 16);
 	strlcpy(htv->substr, htv->x10str + 2, 3);
 	htv->laddr = strtoul(htv->substr, 0, 16);
+}
+
+/*! \sameas aaaa_to_htv */
+void s5_to_htv(struct htv_t *htv)
+{
+	aaaa_to_htv(htv);
+	/* pin code */
+	strlcpy(htv->substr, htv->x10str + 4, 2);
+	htv->pin = strtoul(htv->substr, 0, 16);
+}
+
+/*! \sameas aaaa_to_htv */
+void s7_to_htv(struct htv_t *htv)
+{
+	aaaa_to_htv(htv);
 	/* pin code */
 	strlcpy(htv->substr, htv->x10str + 4, 3);
 	htv->pin = strtoul(htv->substr, 0, 16);
 	/* cmd code */
 	strlcpy(htv->substr, htv->x10str + 6, 2);
 	htv->cmd = strtoul(htv->substr, 0, 16);
+}
 
-	/* crc16 */
-	if (strlen(htv->x10str) > 7) {
-		strlcpy(htv->substr, htv->x10str + 8, 3);
-		htv->crc = strtoul(htv->substr, 0, 16);
-	}
+/*! \sameas aaaa_to_htv */
+void s8_to_htv(struct htv_t *htv)
+{
+	s5_to_htv(htv);
+	/* crc */
+	strlcpy(htv->substr, htv->x10str + 6, 3);
+	htv->crc = strtoul(htv->substr, 0, 16);
+}
+
+/*! \sameas aaaa_to_htv */
+void s10_to_htv(struct htv_t *htv)
+{
+	s7_to_htv(htv);
+	/* crc */
+	strlcpy(htv->substr, htv->x10str + 8, 3);
+	htv->crc = strtoul(htv->substr, 0, 16);
 }
 
 /*! \brief check the validity of the x10str command string.
@@ -85,6 +112,8 @@ void str_to_htv(struct htv_t *htv)
   else if cmd is ok, modify cmd and keep only AAAAPPC.
 
  * \param crctype true - 1net crc, false - crc8.
+ * \return true: string OK, false: error
+ * \todo should return errno code.
  */
 uint8_t htv_check_cmd(struct htv_t *htv, const uint8_t crctype)
 {
@@ -92,32 +121,55 @@ uint8_t htv_check_cmd(struct htv_t *htv, const uint8_t crctype)
 	uint8_t crc;
 
 	switch (strlen(htv->x10str)) {
-		/* str without 1net crc */
-		case 7:
-			/* convert the string into htv struct */
-			str_to_htv(htv);
+		/* simplified str without crc: AAAAP */
+		case 5:
+			s5_to_htv(htv);
 			break;
-		case 10:
-			/* missing ":" on 7th char error */
-			if (*(htv->x10str + 7) != ':')
+		/* str without 1net crc: AAAAPPC */
+		case 7:
+			s7_to_htv(htv);
+			break;
+		/* simplified str with crc: AAAAP:RR */
+		case 8:
+			/* check for ":" */
+			if (*(htv->x10str + 5) != ':') {
 				err |= _BV(2);
-
-			/* convert the string into htv struct */
-			str_to_htv(htv);
-
-			if (crctype) {
-				/*! Do the crc checksum on the string. */
-				crc = one_net_compute_crc(htv->haddr, 0xff);
-				crc = one_net_compute_crc(htv->laddr, crc);
-				crc = one_net_compute_crc(htv->pin, crc);
-				crc = one_net_compute_crc(htv->cmd, crc);
 			} else {
+				s8_to_htv(htv);
+				*(htv->x10str + 5) = 0;
 				crc = crc8_str(htv->x10str);
+
+				/* crc error */
+				if (crc != htv->crc)
+					err |= _BV(3);
 			}
 
-			/* crc error */
-			if (crc != htv->crc)
-				err |= _BV(3);
+			break;
+		/* str with crc: AAAAPPC:RR */
+		case 10:
+			/* check for ":" */
+			if (*(htv->x10str + 7) != ':') {
+				err |= _BV(2);
+			} else {
+				/* convert the string into htv struct */
+				s10_to_htv(htv);
+				/* remove crc from the string */
+				*(htv->x10str + 7) = 0;
+
+				/*! Do the crc checksum on the string. */
+				if (crctype) {
+					crc = one_net_compute_crc(htv->haddr, 0xff);
+					crc = one_net_compute_crc(htv->laddr, crc);
+					crc = one_net_compute_crc(htv->pin, crc);
+					crc = one_net_compute_crc(htv->cmd, crc);
+				} else {
+					crc = crc8_str(htv->x10str);
+				}
+
+				/* crc error */
+				if (crc != htv->crc)
+					err |= _BV(3);
+			}
 
 			break;
 		default:
@@ -127,8 +179,6 @@ uint8_t htv_check_cmd(struct htv_t *htv, const uint8_t crctype)
 
 	if (err)
 		*htv->x10str = 0;
-	else
-		*(htv->x10str + 7) = 0;
 
-	return (!err);
+	return (err);
 }
