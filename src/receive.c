@@ -16,7 +16,7 @@
  */
 
 /*! \file receive.c
-  \brief Main.
+ * \bried the receiver code.
  */
 
 #include <stdlib.h>
@@ -27,6 +27,15 @@
 
 #include "receive.h"
 
+/*! The HTV network address */
+uint16_t EEMEM EE_address;
+/*! The ~EE_address to check the correct value of the address */
+uint16_t EEMEM EE_naddress;
+
+/*! \brief enable the RX module and related serial port.
+ * \note if RTX moduled is used, then a more complicated
+ * init sequence must be used.
+ */
 void start_rx(void)
 {
 #ifdef HTV_USE_RTX
@@ -45,12 +54,16 @@ void start_rx(void)
 	uart_rx(1, 1);
 }
 
+/*! \brief get a char from the RX and echo it on the console.
+ * \return the received char.
+ */
 char get_char_echo(void)
 {
 	char c;
 
 	c = uart_getchar(1, 1);
 
+	/* print it if it is readable */
 	if ((c > 32) && (c < 128))
 		uart_putchar(0, c);
 	else
@@ -59,11 +72,42 @@ char get_char_echo(void)
 	return(c);
 }
 
+/*! \brief input and store the address of the unit in EEPROM.
+ */
 void setup_address(struct htv_t *htv, struct debug_t *debug)
 {
-	debug_print_P(PSTR("You should set the address here!\n"), debug);
+	uint8_t i;
+	char c = 0;
+
+	while ((c != 'y') && (c != 'Y')) {
+		debug_print_P(PSTR("\nChange address, remeber:\n"), debug);
+		debug_print_P(PSTR(" - the address is in HEX, use digit from 0 to f\n"), debug);
+		debug_print_P(PSTR(" - do not use 0000 or ffff as address\n"), debug);
+		debug_print_P(PSTR("\nEnter the 4 digit address [0001 - fffe]: "), debug);
+
+		for (i=0; i<4; i++) {
+			*(htv->substr + i) = uart_getchar(0, 1);
+			uart_putchar(0, *(htv->substr + i));
+		}
+
+		*(htv->substr + 4) = 0;
+		htv->address = strtoul(htv->substr, 0, 16);
+		debug_print_P(PSTR("\nAddress set to ["), debug);
+		debug->string = utoa(htv->address, debug->string, 16);
+		debug_print_P(PSTR("], confirm? (y/n) "), debug);
+		c = uart_getchar(0, 1);
+		uart_putchar(0, c);
+	}
+
+	eeprom_write_word(&EE_address, htv->address);
+	eeprom_write_word(&EE_naddress, ~(htv->address));
+	htv->ee_addr = htv->address;
+	debug_print_P(PSTR("\nAddress changed and saved.\n"), debug);
+	debug_print_P(PSTR("Reset the receiver to check if everything is OK\n"), debug);
 }
 
+/*! \brief enable the IO and led based on the received command.
+ */
 void set_pin(struct htv_t *htv, struct debug_t *debug)
 {
 	if ((htv->address == 0xffff) || (htv->address == htv->ee_addr)) {
@@ -135,11 +179,7 @@ void look_for_cmd(struct htv_t *htv, struct debug_t *debug)
 	}
 }
 
-/*! The HTV network address */
-uint16_t EEMEM EE_address;
-/*! The ~EE_address to check the correct value of the address */
-uint16_t EEMEM EE_naddress;
-
+/*! \brief the main RX program */
 void slave(struct debug_t *debug)
 {
 	struct htv_t *htv;
