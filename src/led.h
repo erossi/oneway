@@ -19,8 +19,11 @@
   \brief Utility for handle leds.
   */
 
-#ifndef CHCP_LED_H
-#define CHCP_LED_H
+#ifndef LED_H
+#define LED_H
+
+#include <stdint.h>
+#include <avr/io.h>
 
 #define LED_PORT PORTB
 #define LED_DDR DDRB

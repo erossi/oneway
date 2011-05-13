@@ -15,16 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdint.h>
-#include <avr/io.h>
 #include <util/delay.h>
 #include "led.h"
 
 void led_set(const uint8_t led, const uint8_t status)
 {
 	switch (status) {
+		case OFF:
+			/* led_set(NONE, OFF); */
+
+			if ((led == RED) || (led == BOTH))
+				LED_PORT |= _BV(LED_RED);
+
+			if ((led == GREEN) || (led == BOTH))
+				LED_PORT |= _BV(LED_GREEN);
+
+			break;
 		case ON:
-			led_set(NONE, OFF);
+			/* led_set(NONE, OFF); */
 
 			if ((led == RED) || (led == BOTH))
 				 LED_PORT &= ~_BV(LED_RED);
