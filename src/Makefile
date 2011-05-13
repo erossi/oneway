@@ -81,3 +81,6 @@ version:
 
 doc:
 	cd ../doc && ( cat Doxyfile ; echo "PROJECT_NUMBER=$(GIT_TAG)" ) | doxygen -
+
+test_1net_crc:
+	gcc -o test_1net test_1net_crc.c
