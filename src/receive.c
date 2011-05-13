@@ -101,6 +101,7 @@ void setup_address(struct htv_t *htv, struct debug_t *debug)
 	char c = 0;
 
 	while ((c != 'y') && (c != 'Y')) {
+		print_address(htv, debug);
 		debug_print_P(PSTR("\nChange address, remeber:\n"), debug);
 		debug_print_P(PSTR(" - the address is in HEX, use digit from 0 to f\n"), debug);
 		debug_print_P(PSTR(" - do not use 0000 or ffff as address\n"), debug);
