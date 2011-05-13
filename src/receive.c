@@ -66,10 +66,22 @@ char get_char_echo(void)
 	/* print it if it is readable */
 	if ((c > 32) && (c < 128))
 		uart_putchar(0, c);
-	else
-		uart_putchar(0, '*');
+	/*
+	   else
+	   uart_putchar(0, '*');
+	   */
 
 	return(c);
+}
+
+/*! \brief print the RX address in use.
+ */
+void print_address(struct htv_t *htv, struct debug_t *debug)
+{
+	debug_print_P(PSTR("\nAddress set to: 0x"), debug);
+	debug->line = utoa(htv->ee_addr, debug->string, 16);
+	debug_print(debug);
+	debug_print_P(PSTR("\n"), debug);
 }
 
 /*! \brief input and store the address of the unit in EEPROM.
@@ -91,22 +103,23 @@ void setup_address(struct htv_t *htv, struct debug_t *debug)
 		}
 
 		*(htv->substr + 4) = 0;
-		htv->address = strtoul(htv->substr, 0, 16);
-		debug_print_P(PSTR("\nAddress set to ["), debug);
-		debug->string = utoa(htv->address, debug->string, 16);
-		debug_print_P(PSTR("], confirm? (y/n) "), debug);
+		htv->ee_addr = strtoul(htv->substr, 0, 16);
+		print_address(htv, debug);
+		debug_print_P(PSTR("confirm? (y/n) "), debug);
 		c = uart_getchar(0, 1);
 		uart_putchar(0, c);
 	}
 
-	eeprom_write_word(&EE_address, htv->address);
-	eeprom_write_word(&EE_naddress, ~(htv->address));
-	htv->ee_addr = htv->address;
+	eeprom_write_word(&EE_address, htv->ee_addr);
+	eeprom_write_word(&EE_naddress, ~(htv->ee_addr));
 	debug_print_P(PSTR("\nAddress changed and saved.\n"), debug);
 	debug_print_P(PSTR("Reset the receiver to check if everything is OK\n"), debug);
 }
 
 /*! \brief enable the IO and led based on the received command.
+ *
+ * \note the address check is done by comparing the received
+ * address with the ee_address stored in htv_t.
  */
 void set_pin(struct htv_t *htv, struct debug_t *debug)
 {
@@ -205,6 +218,8 @@ void slave(struct debug_t *debug)
 	if (htv->ee_addr != ~(eeprom_read_word(&EE_naddress))) {
 		htv->ee_addr = 0;
 		setup_address(htv, debug);
+	} else {
+		print_address(htv, debug);
 	}
 
 	while (1) {
