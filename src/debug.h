@@ -35,7 +35,7 @@
 /*! Number of char a substring can be made of.
 Substrings are used to compose the line when, for example,
 conversions have to be made from int to string etc. */
-#define MAX_STRING_LENGHT 20
+#define MAX_STRING_LENGHT 80
 
 #define PRINT_VALUE_X_LINE 16
 #define SEC_FOR_Y 5

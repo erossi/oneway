@@ -54,6 +54,15 @@ void start_rx(void)
 	uart_rx(1, 1);
 }
 
+/*! \brief shutdown the receiver.
+ *
+ * \todo implement the pin sequence for rtx module.
+ */
+void stop_rx(void)
+{
+	uart_rx(1, 0);
+}
+
 /*! \brief get a char from the RX and echo it on the console.
  * \return the received char.
  */
@@ -196,10 +205,10 @@ void look_for_cmd(struct htv_t *htv, struct debug_t *debug)
 void slave(struct debug_t *debug)
 {
 	struct htv_t *htv;
+	char c;
 
-	htv = malloc(sizeof(struct htv_t));
-	htv->substr = malloc(5);
-	htv->x10str = malloc(MAX_CMD_LENGHT);
+	htv = NULL;
+	htv = htv_init(htv);
 
 #ifdef HTV_USE_RTX
 	AU_DDR |= _BV(AU_ENABLE) | _BV(AU_TXRX);
@@ -208,10 +217,7 @@ void slave(struct debug_t *debug)
 	/* Init IO port */
 	IO_PORT &= ~(_BV(IO_PIN0) | _BV(IO_PIN1));
 	IO_DDR |= _BV(IO_PIN0) | _BV(IO_PIN1);
-
 	uart_init(1);
-	start_rx();
-
 	htv->ee_addr = eeprom_read_word(&EE_address);
 
 	/* check the if the network address is correct */
@@ -222,20 +228,31 @@ void slave(struct debug_t *debug)
 		print_address(htv, debug);
 	}
 
+	start_rx();
+
 	while (1) {
-		*htv->x10str = get_char_echo();
+		c = get_char_echo();
 		
 		/* look for the 1st 'x' */
-		if (*htv->x10str == 'x') {
-			*htv->x10str = get_char_echo();
+		if (c == 'x') {
+			c = get_char_echo();
 
 			/* look for the mandatory 2nd 'x' */
-			if (*htv->x10str == 'x')
+			if (c == 'x')
 			       look_for_cmd(htv, debug);
+		}
+
+		c = uart_getchar(0, 0);
+
+		/* change the running address */
+		if (c == 'a') {
+			stop_rx();
+			uart_flush(0);
+			uart_flush(1);
+			setup_address(htv, debug);
+			start_rx();
 		}
 	}
 
-	free(htv->x10str);
-	free(htv->substr);
-	free(htv);
+	htv_free(htv);
 }

@@ -91,9 +91,8 @@ void master(struct debug_t *debug)
 	struct htv_t *htv;
 	char *crc8s;
 
-	htv = malloc(sizeof(struct htv_t));
-	htv->substr = malloc(5);
-	htv->x10str = malloc(MAX_CMD_LENGHT);
+	htv = NULL;
+	htv = htv_init(htv);
 	/* Re-use pre-allocated space */
 	crc8s = debug->string;
 
@@ -138,8 +137,6 @@ void master(struct debug_t *debug)
 		}
 	}
 
-	free(crc8s);
-	free(htv->x10str);
-	free(htv->substr);
-	free(htv);
+	free(crc8s); /*! \bug error if is debug->string */
+	htv_free(htv);
 }
