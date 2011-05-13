@@ -25,6 +25,7 @@
 #include "1net_crc.h"
 
 #define MAX_CMD_LENGHT 20
+#define MAX_SUBSTR_LENGHT 10
 
 /*#define HTV_USE_RTX */
 #define AU_PORT PORTA
@@ -54,6 +55,8 @@ struct htv_t {
 	uint16_t ee_addr;
 };
 
+struct htv_t *htv_init(struct htv_t *htv);
+void htv_free(struct htv_t *htv);
 uint8_t crc8_str(const char *str);
 void str_to_htv(struct htv_t *htv);
 uint8_t htv_check_cmd(struct htv_t *htv, const uint8_t crctype);

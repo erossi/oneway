@@ -27,6 +27,21 @@
 
 #include "htv.h"
 
+struct htv_t *htv_init(struct htv_t *htv)
+{
+	htv = malloc(sizeof(struct htv_t));
+	htv->substr = malloc(MAX_SUBSTR_LENGHT);
+	htv->x10str = malloc(MAX_CMD_LENGHT);
+	return(htv);
+}
+
+void htv_free(struct htv_t *htv)
+{
+	free(htv->x10str);
+	free(htv->substr);
+	free(htv);
+}
+
 /*! \brief return the crc8 of the string.
  *
  * \param str the string
