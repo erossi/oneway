@@ -156,3 +156,9 @@ void uart_printstr(const uint8_t port, const char *s)
 	while (*s)
 		uart_putchar(port, *s++);
 }
+
+/*! \brief flush the port */
+void uart_flush(const uint8_t port)
+{
+	while (uart_getchar(port, 0));
+}
