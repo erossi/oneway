@@ -69,14 +69,17 @@ void tx_str(const char *str, const uint8_t port)
   \sa host_check_command()
   \param cmd pre-allocated space for the returned string.
  */
-void host_get_command(char *cmd)
+void host_get_command(char *cmd, const uint8_t echo)
 {
 	uint8_t i = 0;
 
 	do {
 		*(cmd + i) = uart_getchar(0, 1);
+
 		/* echo the char */
-		uart_putchar(0, *(cmd + i));
+		if (echo)
+			uart_putchar(0, *(cmd + i));
+
 		i++;
 	} while ((i<MAX_CMD_LENGHT) && (*(cmd + i - 1) != '\r'));
 
@@ -86,15 +89,55 @@ void host_get_command(char *cmd)
 	*(cmd + i) = 0;
 }
 
+/*! \brief pin related command
+ * in the form:
+ * P:AAAA:PP:C
+ */
+void p_cmd(struct htv_t *htv, struct debug_t *debug)
+{
+	char *crc8s;
+
+	/* Re-use pre-allocated space */
+	crc8s = debug->string;
+	/* transform to AAAAaa:PP:C */
+	memmove(htv->x10str, htv->x10str + 2, 4);
+	/* to AAAAPP:PP:C */
+	memmove(htv->x10str + 4, htv->x10str + 7, 2);
+	/* to AAAAPPC */
+	memmove(htv->x10str + 6, htv->x10str + 10, 1);
+	*(htv->x10str + 7) = 0;
+
+	/* check the command */
+	if (!htv_check_cmd(htv)) {
+		/* calculate crc8 */
+		htv->crc = crc8_str(htv->x10str);
+
+		/* if crc is a single digit, prepend a '0' */
+		if (htv->crc < 0x10) {
+			strcpy_P(crc8s, PSTR("0"));
+			strcat(crc8s, utoa(htv->crc, htv->substr, 16));
+		} else {
+			crc8s = utoa(htv->crc, crc8s, 16);
+		}
+
+		/* Convert AAAAPPC to AAAAPPC:RR */
+		*(htv->x10str + 7) = ':';
+		*(htv->x10str + 8) = 0;
+		htv->x10str = strcat(htv->x10str, crc8s);
+		tx_str(htv->x10str, 1);
+		debug_print_P(PSTR("OK\n"), debug);
+	} else {
+		debug_print_P(PSTR("ko\n"), debug);
+	}
+}
+
 void master(struct debug_t *debug)
 {
 	struct htv_t *htv;
-	char *crc8s;
+	uint8_t echo = 1;
 
 	htv = NULL;
 	htv = htv_init(htv);
-	/* Re-use pre-allocated space */
-	crc8s = debug->string;
 
 #ifdef HTV_USE_RTX
 	AU_DDR |= _BV(AU_ENABLE) | _BV(AU_TXRX);
@@ -106,37 +149,33 @@ void master(struct debug_t *debug)
 	led_set(GREEN, ON);
 
 	while (1) {
-		host_get_command(htv->x10str);
+		host_get_command(htv->x10str, echo);
 
-		/* check the command */
-		if (!htv_check_cmd(htv)) {
-			/* simplify the tx string to the format
-			 * AAAAP
-			 */
-			*(htv->x10str + 4) = *(htv->x10str + 5);
-			*(htv->x10str + 5) = 0;
-			/* calculate crc8 of AAAAP */
-			htv->crc = crc8_str(htv->x10str);
-
-			/* if crc is a single digit, prepend a '0' */
-			if (htv->crc < 0x10) {
-				strcpy_P(crc8s, PSTR("0"));
-				strcat(crc8s, utoa(htv->crc, htv->substr, 16));
-			} else {
-				crc8s = utoa(htv->crc, crc8s, 16);
-			}
-
-			/* Convert AAAAP to AAAAP:RR */
-			*(htv->x10str + 5) = ':';
-			*(htv->x10str + 6) = 0;
-			htv->x10str = strcat(htv->x10str, crc8s);
-			tx_str(htv->x10str, 1);
-			debug_print_P(PSTR("OK\n"), debug);
-		} else {
-			debug_print_P(PSTR("ko\n"), debug);
+		switch (*(htv->x10str)) {
+			case 'P':
+				p_cmd(htv, debug);
+				break;
+			case 'L':
+				debug_print_P(PSTR("0\n"), debug);
+				break;
+			case 'E':
+				switch (*(htv->x10str + 2)) {
+					case '0':
+						echo = 0;
+						debug_print_P(PSTR("OK\n"), debug);
+						break;
+					case '1':
+						echo = 1;
+						debug_print_P(PSTR("OK\n"), debug);
+						break;
+					default:
+						debug_print_P(PSTR("ko\n"), debug);
+				}
+				break;
+			default:
+				debug_print_P(PSTR("ko\n"), debug);
 		}
 	}
 
-	free(crc8s); /*! \bug error if is debug->string */
 	htv_free(htv);
 }
