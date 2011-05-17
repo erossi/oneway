@@ -168,7 +168,7 @@ void set_pin(struct htv_t *htv, struct debug_t *debug)
 	}
 }
 
-/*! \brief receive the AAAAP:RR string */
+/*! \brief receive the AAAAPPC string */
 void look_for_cmd(struct htv_t *htv, struct debug_t *debug)
 {
 	uint8_t i = 0;
@@ -185,17 +185,20 @@ void look_for_cmd(struct htv_t *htv, struct debug_t *debug)
 	}
 
 	*(htv->x10str + 8) = 0;
-
 	debug_print_P(PSTR("\nReceived: "), debug);
 	uart_printstr(0, htv->x10str);
-
 	i = htv_check_cmd(htv);
+
 	if (i) {
 		debug_print_P(PSTR(" Error "), debug);
 		debug->line = utoa(i, debug->line, 16);
 		debug_print(debug);
 		debug_print_P(PSTR("\n"), debug);
-		debug_print_htv(htv, debug);
+		/*! \bug in case of error 4 the struct htv
+		 * is mostly void, and printing it's content
+		 * will be a memory leak crash.
+		 */
+		/* debug_print_htv(htv, debug); */
 	} else {
 		debug_print_P(PSTR(" OK\n"), debug);
 		set_pin(htv, debug);
