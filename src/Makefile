@@ -46,7 +46,7 @@ SIZE = avr-size
 
 REMOVE = rm -f
 
-objects = led.o uart.o debug.o htv.o 1net_crc.o 
+objects = led.o uart.o debug.o htv.o
 rx_obj = $(objects) receive.o
 tx_obj = $(objects) transmit.o
 
@@ -81,6 +81,3 @@ version:
 
 doc:
 	cd ../doc && ( cat Doxyfile ; echo "PROJECT_NUMBER=$(GIT_TAG)" ) | doxygen -
-
-test_1net_crc:
-	gcc -o test_1net test_1net_crc.c

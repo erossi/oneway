@@ -189,7 +189,7 @@ void look_for_cmd(struct htv_t *htv, struct debug_t *debug)
 	debug_print_P(PSTR("\nReceived: "), debug);
 	uart_printstr(0, htv->x10str);
 
-	i = htv_check_cmd(htv, 0);
+	i = htv_check_cmd(htv);
 	if (i) {
 		debug_print_P(PSTR(" Error "), debug);
 		debug->line = utoa(i, debug->line, 16);

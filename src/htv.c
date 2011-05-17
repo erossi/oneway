@@ -67,11 +67,6 @@ void aaaa_to_htv(struct htv_t *htv)
 	/* Full address */
 	strlcpy(htv->substr, htv->x10str, 5);
 	htv->address = strtoul(htv->substr, 0, 16);
-	/* high and low byte of the address */
-	strlcpy(htv->substr, htv->x10str, 3);
-	htv->haddr = strtoul(htv->substr, 0, 16);
-	strlcpy(htv->substr, htv->x10str + 2, 3);
-	htv->laddr = strtoul(htv->substr, 0, 16);
 }
 
 /*! \sameas aaaa_to_htv */
@@ -104,15 +99,6 @@ void s8_to_htv(struct htv_t *htv)
 	htv->crc = strtoul(htv->substr, 0, 16);
 }
 
-/*! \sameas aaaa_to_htv */
-void s10_to_htv(struct htv_t *htv)
-{
-	s7_to_htv(htv);
-	/* crc */
-	strlcpy(htv->substr, htv->x10str + 8, 3);
-	htv->crc = strtoul(htv->substr, 0, 16);
-}
-
 /*! \brief check the validity of the x10str command string.
  *
   A vaild command is in the form of:
@@ -126,11 +112,10 @@ void s10_to_htv(struct htv_t *htv)
   if cmd is not correct clear the cmd string and return FALSE
   else if cmd is ok, modify cmd and keep only AAAAPPC.
 
- * \param crctype true - 1net crc, false - crc8.
  * \return true: string OK, false: error
  * \todo should return errno code.
  */
-uint8_t htv_check_cmd(struct htv_t *htv, const uint8_t crctype)
+uint8_t htv_check_cmd(struct htv_t *htv)
 {
 	uint8_t err=0;
 	uint8_t crc;
@@ -140,7 +125,7 @@ uint8_t htv_check_cmd(struct htv_t *htv, const uint8_t crctype)
 		case 5:
 			s5_to_htv(htv);
 			break;
-		/* str without 1net crc: AAAAPPC */
+		/* str without crc: AAAAPPC */
 		case 7:
 			s7_to_htv(htv);
 			break;
@@ -153,33 +138,6 @@ uint8_t htv_check_cmd(struct htv_t *htv, const uint8_t crctype)
 				s8_to_htv(htv);
 				*(htv->x10str + 5) = 0;
 				crc = crc8_str(htv->x10str);
-
-				/* crc error */
-				if (crc != htv->crc)
-					err |= _BV(3);
-			}
-
-			break;
-		/* str with crc: AAAAPPC:RR */
-		case 10:
-			/* check for ":" */
-			if (*(htv->x10str + 7) != ':') {
-				err |= _BV(2);
-			} else {
-				/* convert the string into htv struct */
-				s10_to_htv(htv);
-				/* remove crc from the string */
-				*(htv->x10str + 7) = 0;
-
-				/*! Do the crc checksum on the string. */
-				if (crctype) {
-					crc = one_net_compute_crc(htv->haddr, 0xff);
-					crc = one_net_compute_crc(htv->laddr, crc);
-					crc = one_net_compute_crc(htv->pin, crc);
-					crc = one_net_compute_crc(htv->cmd, crc);
-				} else {
-					crc = crc8_str(htv->x10str);
-				}
 
 				/* crc error */
 				if (crc != htv->crc)

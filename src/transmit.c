@@ -108,8 +108,8 @@ void master(struct debug_t *debug)
 	while (1) {
 		host_get_command(htv->x10str);
 
-		/* check the command with crc type 1net */
-		if (!htv_check_cmd(htv, 1)) {
+		/* check the command */
+		if (!htv_check_cmd(htv)) {
 			/* simplify the tx string to the format
 			 * AAAAP
 			 */
