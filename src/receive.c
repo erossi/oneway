@@ -16,7 +16,17 @@
  */
 
 /*! \file receive.c
- * \bried the receiver code.
+ * \brief the receiver code.
+ *
+ * \page txrxproto Interface protocol from TX to RX:
+ *
+ * from master tx -> slave rx:
+ * - a serial string at 4800 bps, none parity, 8 bit, 1 bit stop.
+ * The string is in the form:
+ * AAAAP:RR\n
+ * where
+ * AAAA is the same as above, P = PP, while RR is crc of the string.
+ *
  */
 
 #include <stdlib.h>
@@ -126,6 +136,27 @@ void setup_address(struct htv_t *htv, struct debug_t *debug)
 	debug_print_P(PSTR("Reset the receiver to check if everything is OK\n"), debug);
 }
 
+/*! \brief execute command on a pin.
+ *
+ * \param pin which pin to enable or disable.
+ * \param cmd 2 - enable, 3 - disable
+ */
+void set_cmd(const uint8_t pin, const uint8_t cmd, struct debug_t *debug)
+{
+	switch (cmd) {
+		case 2:
+			IO_PORT |= _BV(pin);
+			debug_print_P(PSTR("on"), debug);
+			break;
+		case 3:
+			IO_PORT &= ~_BV(pin);
+			debug_print_P(PSTR("off"), debug);
+			break;
+		default:
+			debug_print_P(PSTR("none"), debug);
+	}
+}
+
 /*! \brief enable the IO and led based on the received command.
  *
  * \note the address check is done by comparing the received
@@ -134,46 +165,31 @@ void setup_address(struct htv_t *htv, struct debug_t *debug)
 void set_pin(struct htv_t *htv, struct debug_t *debug)
 {
 	if ((htv->address == 0xffff) || (htv->address == htv->ee_addr)) {
-		debug_print_P(PSTR("Enable: "), debug);
+		debug_print_P(PSTR("Action: "), debug);
 
-		if (htv->pin & _BV(0)) {
-			IO_PORT |= _BV(IO_PIN0);
-			debug_print_P(PSTR(" Pin0"), debug);
-		} else {
-			IO_PORT &= ~_BV(IO_PIN0);
-		}
-
-		if (htv->pin & _BV(1)) {
-			IO_PORT |= _BV(IO_PIN1);
-			debug_print_P(PSTR(" Pin1"), debug);
-		} else {
-			IO_PORT &= ~_BV(IO_PIN1);
-		}
-
-		if (htv->pin & _BV(2)) {
-			led_set(GREEN, ON);
-			debug_print_P(PSTR(" Green"), debug);
-		} else {
-			led_set(GREEN, OFF);
-		}
-
-		if (htv->pin & _BV(3)) {
-			led_set(RED, ON);
-			debug_print_P(PSTR(" Red"), debug);
-		} else {
-			led_set(RED, OFF);
+		switch (htv->pin) {
+			case 1:
+				debug_print_P(PSTR("Pin0 - "), debug);
+				set_cmd(IO_PIN0, htv->cmd, debug);
+				break;
+			case 2:
+				debug_print_P(PSTR("Pin1 - "), debug);
+				set_cmd(IO_PIN1, htv->cmd, debug);
+				break;
+			default:
+				debug_print_P(PSTR("Unsupported IO"), debug);
 		}
 
 		debug_print_P(PSTR("\n"), debug);
 	}
 }
 
-/*! \brief receive the AAAAPPC string */
+/*! \brief receive the AAAAPPC:RR string */
 void look_for_cmd(struct htv_t *htv, struct debug_t *debug)
 {
 	uint8_t i = 0;
 
-	while (i<8) {
+	while (i<11) {
 		*(htv->x10str + i) = get_char_echo();
 
 		/* ignore 'x' char.
@@ -184,7 +200,7 @@ void look_for_cmd(struct htv_t *htv, struct debug_t *debug)
 			i++;
 	}
 
-	*(htv->x10str + 8) = 0;
+	*(htv->x10str + 11) = 0;
 	debug_print_P(PSTR("\nReceived: "), debug);
 	uart_printstr(0, htv->x10str);
 	i = htv_check_cmd(htv);

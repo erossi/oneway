@@ -69,7 +69,7 @@ void aaaa_to_htv(struct htv_t *htv)
 	htv->address = strtoul(htv->substr, 0, 16);
 }
 
-/*! \sameas aaaa_to_htv */
+/*! \sa aaaa_to_htv */
 void s5_to_htv(struct htv_t *htv)
 {
 	aaaa_to_htv(htv);
@@ -78,7 +78,7 @@ void s5_to_htv(struct htv_t *htv)
 	htv->pin = strtoul(htv->substr, 0, 16);
 }
 
-/*! \sameas aaaa_to_htv */
+/*! \sa aaaa_to_htv */
 void s7_to_htv(struct htv_t *htv)
 {
 	aaaa_to_htv(htv);
@@ -90,12 +90,21 @@ void s7_to_htv(struct htv_t *htv)
 	htv->cmd = strtoul(htv->substr, 0, 16);
 }
 
-/*! \sameas aaaa_to_htv */
+/*! \sa aaaa_to_htv */
 void s8_to_htv(struct htv_t *htv)
 {
 	s5_to_htv(htv);
 	/* crc */
 	strlcpy(htv->substr, htv->x10str + 6, 3);
+	htv->crc = strtoul(htv->substr, 0, 16);
+}
+
+/*! \sa aaaa_to_htv */
+void s10_to_htv(struct htv_t *htv)
+{
+	s7_to_htv(htv);
+	/* crc */
+	strlcpy(htv->substr, htv->x10str + 8, 3);
 	htv->crc = strtoul(htv->substr, 0, 16);
 }
 
@@ -137,6 +146,22 @@ uint8_t htv_check_cmd(struct htv_t *htv)
 			} else {
 				s8_to_htv(htv);
 				*(htv->x10str + 5) = 0;
+				crc = crc8_str(htv->x10str);
+
+				/* crc error */
+				if (crc != htv->crc)
+					err |= _BV(3);
+			}
+
+			break;
+		/* AAAAPPC:RR */
+		case 10:
+			/* check for ":" */
+			if (*(htv->x10str + 7) != ':') {
+				err |= _BV(2);
+			} else {
+				s10_to_htv(htv);
+				*(htv->x10str + 7) = 0;
 				crc = crc8_str(htv->x10str);
 
 				/* crc error */

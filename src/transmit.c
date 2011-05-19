@@ -16,7 +16,90 @@
  */
 
 /*! \file transmit.c
-  \brief The TX code start here.
+ * \brief Interface and API from PC to TX module.
+ *
+ * \page pctxproto Interface protocol from host to TX:
+ *
+ * Serial connection at 9600 bps, none parity, 8 bit, 1 bit stop.
+ *
+ * \section seccmd Possible command:
+ * - \ref subacmd
+ * - \ref subecmd
+ * - \ref sublcmd
+ * - \ref subpcmd
+ * - \ref subhcmd
+ *
+ * \subsection subacmd A - change the address of a remote.
+ * A:OOOO:NNNN:OOOO:NNNN
+ *
+ * where:
+ * - OOOO is the old address
+ * - NNNN is the new address
+ *
+ * reply to the 'A' command can be:
+ * - "OK" the command is received and forwarded to the clients.
+ * - "ko" some error occured.
+ *
+ * example:
+ *
+ * -> A:0123:1CDF:0123:1CDF\n
+ * <- OK
+ *
+ * will change the device address 0x0123 to 0x1CDF.
+ *
+ * \subsection subecmd E - echo on off.
+ * E:X
+ *
+ * where:
+ * - X can be '0' or '1', 0 - disable echo, 1 - enable echo.
+ *
+ * example:
+ *
+ * -> E:0\n
+ * <- OK
+ *
+ * echo disabled.
+ *
+ * \subsection sublcmd L - print the TX id.
+ * example (id = 2):
+ *
+ * -> L\n
+ * <- 2
+ *
+ * \subsection subpcmd P - send a command to a remote.
+ * P:AAAA:PP:C\n
+ *
+ * where
+ * - AAAA is the address ascii - hex from 0001 to FFFF where:
+ *   - 0000 unconfigured device.
+ *   - FFFF is broadcast address.
+ * - PP is the pin number in Ascii/hex form from 00 to FF where:
+ *   - 00 - i/o pin 0
+ *   - 01 - i/o pin 1
+ *   - FF - All pin
+ * - C is the command in ascii/hex where:
+ *   - 0 is off.
+ *   - 1 is on.
+ *
+ * reply to the 'P' command can be:
+ * - "OK" the command is received and forwarded to the clients.
+ * - "ko" some error occured.
+ *
+ * example
+ *
+ * -> P:012F:01:1\n
+ * <- OK
+ *
+ * will send to the device "012F" the command "turn on the pin 1".
+ * \note address "0000" is used by unconfigurd devices and
+ * should not be used in normal condition.
+ *
+ * \subsection subhcmd ? - help command.
+ * example:
+ *
+ * -> ?\n
+ * <- the brief commands descrption.
+ *
  */
 
 #include <stdlib.h>
@@ -47,7 +130,7 @@ void stop_tx(void)
 	_delay_us(400);
 }
 
-/*! \brief transmit a string to the air
+/*! \brief transmit a string on the air
  *
  * Send the string with the header to the air.
  * \param str the string to be sent.
@@ -65,9 +148,17 @@ void tx_str(const char *str, const uint8_t port)
 }
 
 /*! \brief wait until a command is entered.
-
-  \sa host_check_command()
-  \param cmd pre-allocated space for the returned string.
+ *
+ * Wait for a char from serial port and echo it if
+ * echo is '1'. The command is terminated by a '\r'.
+ *
+ * \sa host_check_command()
+ * \param cmd pre-allocated space for the returned string.
+ * \param echo 1: echo the chars while typing.
+ * \note A maximum of MAX_CMD_LENGHT number of char can be
+ * entered.
+ * The last '\r' is substituted by a '\0' or, if the maximum
+ * number of char is reached, the last one is changed.
  */
 void host_get_command(char *cmd, const uint8_t echo)
 {
@@ -83,7 +174,7 @@ void host_get_command(char *cmd, const uint8_t echo)
 		i++;
 	} while ((i<MAX_CMD_LENGHT) && (*(cmd + i - 1) != '\r'));
 
-	/*! Substitute '\n' with a \0 to terminate the string or
+	/* Substitute '\n' with a \0 to terminate the string or
 	 put a \0 at cmd[19] */
 	i--;
 	*(cmd + i) = 0;
@@ -152,11 +243,8 @@ void master(struct debug_t *debug)
 		host_get_command(htv->x10str, echo);
 
 		switch (*(htv->x10str)) {
-			case 'P':
-				p_cmd(htv, debug);
-				break;
-			case 'L':
-				debug_print_P(PSTR("0\n"), debug);
+			case 'A':
+				debug_print_P(PSTR("ko\n"), debug);
 				break;
 			case 'E':
 				switch (*(htv->x10str + 2)) {
@@ -171,6 +259,21 @@ void master(struct debug_t *debug)
 					default:
 						debug_print_P(PSTR("ko\n"), debug);
 				}
+				break;
+			case 'L':
+				debug_print_P(PSTR(TX_ID), debug);
+				debug_print_P(PSTR("\n"), debug);
+				break;
+			case 'P':
+				p_cmd(htv, debug);
+				break;
+			case '?':
+				debug_print_P(PSTR("Help:\n"), debug);
+				debug_print_P(PSTR("A:OOOO:NNNN:OOOO:NNNN change the remote device's address from OOOO to NNNN.\n"), debug);
+				debug_print_P(PSTR("P:AAAA:PP:C send a command.\n"), debug);
+				debug_print_P(PSTR("L print the TX id.\n"), debug);
+				debug_print_P(PSTR("E:x where x 1 or 0, enable or disable echo.\n"), debug);
+				debug_print_P(PSTR("? this help.\n"), debug);
 				break;
 			default:
 				debug_print_P(PSTR("ko\n"), debug);

@@ -23,6 +23,7 @@
 #define TX_H
 
 #define TX_HEAD "xxx"
+#define TX_ID "0"
 
 #include "led.h"
 #include "uart.h"
