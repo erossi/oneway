@@ -57,6 +57,10 @@ void uart_rx(const uint8_t port, const uint8_t enable)
 			UCSR0B &= ~_BV(RXEN0);
 }
 
+/*! \brief initialize the serial port and speed.
+ * \param port the port to initialize.
+ * \note it does not enable tx or rx.
+ */
 void uart_init(const uint8_t port)
 {
 	if (port) {
@@ -84,6 +88,9 @@ void uart_init(const uint8_t port)
 	}
 }
 
+/*! turn off the serial port.
+ * \param port the serial port to disable.
+ */
 void uart_shutdown(const uint8_t port)
 {
 	if (port) {
@@ -99,6 +106,13 @@ void uart_shutdown(const uint8_t port)
 	}
 }
 
+/*! \brief get a char from the serial port.
+ * \param port the port.
+ * \param locked 1 - wait forever until a char is received.
+ * 0 - get a char if it is present or exit with 0.
+ *
+ * \return the char or 0.
+ */
 char uart_getchar(const uint8_t port, const uint8_t locked)
 {
 	if (locked) {

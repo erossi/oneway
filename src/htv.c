@@ -27,6 +27,7 @@
 
 #include "htv.h"
 
+/*! \brief initialize the htv struct */
 struct htv_t *htv_init(struct htv_t *htv)
 {
 	htv = malloc(sizeof(struct htv_t));
@@ -35,6 +36,9 @@ struct htv_t *htv_init(struct htv_t *htv)
 	return(htv);
 }
 
+/*! \brief free the htv struct.
+ * \note this should be never used.
+ */
 void htv_free(struct htv_t *htv)
 {
 	free(htv->x10str);
@@ -60,6 +64,7 @@ uint8_t crc8_str(const char *str)
 
 /*! \brief convert a pre-formatted string to the struct htv.
  *
+ * This convert the AAAA part to htv_t->address.
  * \note the string is stored in the struct itself.
  */
 void aaaa_to_htv(struct htv_t *htv)
@@ -69,7 +74,8 @@ void aaaa_to_htv(struct htv_t *htv)
 	htv->address = strtoul(htv->substr, 0, 16);
 }
 
-/*! \sa aaaa_to_htv */
+/*! \brief AAAAC to htv_t.
+ * \sa aaaa_to_htv */
 void s5_to_htv(struct htv_t *htv)
 {
 	aaaa_to_htv(htv);
@@ -78,7 +84,9 @@ void s5_to_htv(struct htv_t *htv)
 	htv->pin = strtoul(htv->substr, 0, 16);
 }
 
-/*! \sa aaaa_to_htv */
+/*! \brief AAAAPPC to htv_t.
+ * \sa aaaa_to_htv.
+ */
 void s7_to_htv(struct htv_t *htv)
 {
 	aaaa_to_htv(htv);
@@ -90,7 +98,8 @@ void s7_to_htv(struct htv_t *htv)
 	htv->cmd = strtoul(htv->substr, 0, 16);
 }
 
-/*! \sa aaaa_to_htv */
+/*! \brief AAAAC:RR to htv_t.
+ * \sa aaaa_to_htv */
 void s8_to_htv(struct htv_t *htv)
 {
 	s5_to_htv(htv);
@@ -99,7 +108,8 @@ void s8_to_htv(struct htv_t *htv)
 	htv->crc = strtoul(htv->substr, 0, 16);
 }
 
-/*! \sa aaaa_to_htv */
+/*! \brief AAAAPPC:RR to htv_t.
+ * \sa aaaa_to_htv */
 void s10_to_htv(struct htv_t *htv)
 {
 	s7_to_htv(htv);
@@ -110,17 +120,10 @@ void s10_to_htv(struct htv_t *htv)
 
 /*! \brief check the validity of the x10str command string.
  *
-  A vaild command is in the form of:
-  AAAAPPC:RR\n
-  where
-  AAAA: Client address in HEX (2 byte)
-  PP:   pin number in HEX (1 byte)
-  C: command: 2 On , 3 Off
-  RR crc calculated before ":"
-
-  if cmd is not correct clear the cmd string and return FALSE
-  else if cmd is ok, modify cmd and keep only AAAAPPC.
-
+ * Based on the string lenght, choose which protocol to check.
+ * If cmd is not correct clear the cmd string and return FALSE
+ * else if cmd is ok, modify cmd and keep only AAAAPPC.
+ * 
  * \return true: string OK, false: error
  * \todo should return errno code.
  */

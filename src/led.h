@@ -15,9 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*! \file led.h
-  \brief Utility for handle leds.
-  */
+/* Doxygen undocumented */
 
 #ifndef LED_H
 #define LED_H
@@ -25,10 +23,15 @@
 #include <stdint.h>
 #include <avr/io.h>
 
+/*! the port where led are connected. */
 #define LED_PORT PORTB
+/*! the data direction register. */
 #define LED_DDR DDRB
+/*! red led pin */
 #define LED_RED PB2
+/*! green led pin */
 #define LED_GREEN PB3
+/*! the delay function used in blink. */
 #define LED_DELAY _delay_ms(200)
 
 /*! Leds statuses */

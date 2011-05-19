@@ -28,6 +28,7 @@
 /*! Print a string taken directly from the EEPROM
   avoiding memory allocation.
   \param string the PSTR() string to be printed.
+  \param debug the struct debug.
  */
 void debug_print_P(PGM_P string, struct debug_t *debug)
 {
@@ -37,12 +38,14 @@ void debug_print_P(PGM_P string, struct debug_t *debug)
 	}
 }
 
+/*! print the debug->line if debug is active.*/
 void debug_print(struct debug_t *debug)
 {
 	if (debug->active)
 		uart_printstr(0, debug->line);
 }
 
+/*! \brief boot message */
 static void hello(struct debug_t *debug)
 {
         debug_print_P(PSTR("\n\n\n"), debug);
@@ -56,6 +59,7 @@ static void hello(struct debug_t *debug)
         debug_print_P(PSTR("\n\n"), debug);
 }
 
+/*! \brief press 'y' or 'n' */
 uint8_t debug_wait_for_y(struct debug_t *debug)
 {
 	uint8_t i;
@@ -79,6 +83,7 @@ uint8_t debug_wait_for_y(struct debug_t *debug)
 	return(0);
 }
 
+/*! \brief initialize debug struct and uart console */
 struct debug_t *debug_init(void)
 {
 	struct debug_t *debug;
@@ -105,6 +110,7 @@ struct debug_t *debug_init(void)
 	return(debug);
 }
 
+/*! \brief free the memory */
 void debug_free(struct debug_t *debug)
 {
 	if (debug->active) {
@@ -115,6 +121,11 @@ void debug_free(struct debug_t *debug)
 	free(debug);
 }
 
+/*! \brief print the struct htv contents.
+ *
+ * \note if the strings are not correctly initialized and
+ * terminated, this function will memory leak and crash.
+ */
 void debug_print_htv(struct htv_t *htv, struct debug_t *debug)
 {
 	strcpy_P(debug->line, PSTR("\nAddr: "));

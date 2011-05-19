@@ -22,13 +22,19 @@
 #ifndef HTV_H
 #define HTV_H
 
+/*! command's number of char */
 #define MAX_CMD_LENGHT 20
+/*! helpfull substring max number of char */
 #define MAX_SUBSTR_LENGHT 10
 
 /*#define HTV_USE_RTX */
+/*! port where the rtx modules is connected */
 #define AU_PORT PORTA
+/*! data direction register */
 #define AU_DDR DDRA
+/*! enable tx pin connected to. */
 #define AU_ENABLE PA5
+/*! switch tx/rx pin connected to. */
 #define AU_TXRX PA6
 
 /*! structure of the data packet */
@@ -52,7 +58,6 @@ struct htv_t {
 struct htv_t *htv_init(struct htv_t *htv);
 void htv_free(struct htv_t *htv);
 uint8_t crc8_str(const char *str);
-void str_to_htv(struct htv_t *htv);
 uint8_t htv_check_cmd(struct htv_t *htv);
 
 #endif

@@ -140,6 +140,7 @@ void setup_address(struct htv_t *htv, struct debug_t *debug)
  *
  * \param pin which pin to enable or disable.
  * \param cmd 2 - enable, 3 - disable
+ * \param debug the debug_t struct.
  */
 void set_cmd(const uint8_t pin, const uint8_t cmd, struct debug_t *debug)
 {

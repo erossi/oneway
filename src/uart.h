@@ -32,12 +32,21 @@
 #error TX buffer size is not a power of 2
 #endif
 
+/*! used as buffer area for IRQ rx/tx */
 struct uartStruct {
+	/*! rx buffer area */
         char *rx_buffer;
+	/*! tx buffer area */
         char *tx_buffer;
-        volatile uint8_t rx_flag, tx_flag, rxIdx, txIdx;
+	/*! an IRQ rx string is received. */
+        volatile uint8_t rx_flag;
+	/*! the IRQ tx has been completed. */
+        volatile uint8_t tx_flag;
+	/*! rx index */
+        volatile uint8_t rxIdx;
+	/*! tx index */
+        volatile uint8_t txIdx;
 };
-
 
 void uart_tx(const uint8_t port, const uint8_t enable);
 void uart_rx(const uint8_t port, const uint8_t enable);

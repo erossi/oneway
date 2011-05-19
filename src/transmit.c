@@ -150,14 +150,14 @@ void tx_str(const char *str, const uint8_t port)
 /*! \brief wait until a command is entered.
  *
  * Wait for a char from serial port and echo it if
- * echo is '1'. The command is terminated by a '\r'.
+ * echo is '1'. The command is terminated by a '\\r'.
  *
  * \sa host_check_command()
  * \param cmd pre-allocated space for the returned string.
  * \param echo 1: echo the chars while typing.
  * \note A maximum of MAX_CMD_LENGHT number of char can be
  * entered.
- * The last '\r' is substituted by a '\0' or, if the maximum
+ * The last '\\r' is substituted by a '\0' or, if the maximum
  * number of char is reached, the last one is changed.
  */
 void host_get_command(char *cmd, const uint8_t echo)
@@ -222,6 +222,7 @@ void p_cmd(struct htv_t *htv, struct debug_t *debug)
 	}
 }
 
+/*! \brief main TX loop */
 void master(struct debug_t *debug)
 {
 	struct htv_t *htv;

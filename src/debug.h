@@ -26,7 +26,9 @@
 #include "uart.h"
 #include "htv.h"
 
+/*! unused */
 #define QUOTEME_(x) #x
+/*! unused */
 #define QUOTEME(x) QUOTEME_(x)
 
 /*! Maximum number of char a line can be */
@@ -37,7 +39,9 @@ Substrings are used to compose the line when, for example,
 conversions have to be made from int to string etc. */
 #define MAX_STRING_LENGHT 80
 
+/*! unused */
 #define PRINT_VALUE_X_LINE 16
+/*! seconds to wait for press 'y' when not locked */
 #define SEC_FOR_Y 5
 
 /*! \struct debug_t

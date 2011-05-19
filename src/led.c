@@ -15,9 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*! \file led.c
+ * \brief led handling functions.
+ */
+
 #include <util/delay.h>
 #include "led.h"
 
+/*! \brief turn on, off and blink a led or both.
+ *
+ * \param led RED, GREEN, BOTH, NONE.
+ * \param status ON, OFF, BLINK */
 void led_set(const uint8_t led, const uint8_t status)
 {
 	switch (status) {
@@ -63,6 +71,7 @@ void led_set(const uint8_t led, const uint8_t status)
 	}
 }
 
+/*! \brief initialize the port and turn both led on. */
 void led_init(void)
 {
 	LED_DDR |= (_BV(LED_RED) | _BV(LED_GREEN));

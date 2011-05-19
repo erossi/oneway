@@ -21,8 +21,11 @@
 
 #ifndef TX_H
 #define TX_H
-
+/*! the header of the packet to tx */
 #define TX_HEAD "xxx"
+/*! id of the master modules, required if more than 1 master is
+ * present.
+ */
 #define TX_ID "0"
 
 #include "led.h"

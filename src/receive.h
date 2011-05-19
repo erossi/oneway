@@ -27,7 +27,9 @@
 #include "debug.h"
 #include "htv.h"
 
+/*! port where the IO pin are connected in the rx module. */
 #define IO_PORT PORTA
+/*! data direction register */
 #define IO_DDR DDRA
 /*
 #define IO_PIN0 PA0
@@ -35,7 +37,9 @@
 */
 /* chipcard test, test performed on a different circuit with 
  * different IO PIN */
+/*! pin 0 */
 #define IO_PIN0 PA4
+/*! pin 1 */
 #define IO_PIN1 PA6
 
 void slave(struct debug_t *debug);

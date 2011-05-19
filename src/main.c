@@ -41,6 +41,7 @@
 #include "transmit.h"
 #endif
 
+/*! init area and call the master or slave module */
 int main(void)
 {
 	struct debug_t *debug;
