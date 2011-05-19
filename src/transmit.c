@@ -100,6 +100,7 @@
  * -> ?\n
  * <- the brief commands descrption.
  *
+ * \todo the A command is not implemented yet.
  */
 
 #include <stdlib.h>
