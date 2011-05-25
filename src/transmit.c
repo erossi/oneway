@@ -240,6 +240,7 @@ void master(struct debug_t *debug)
 
 	uart_init(1);
 	led_set(GREEN, ON);
+	debug_print_P(PSTR("Master module.\n"), debug);
 
 	while (1) {
 		host_get_command(htv->x10str, echo);

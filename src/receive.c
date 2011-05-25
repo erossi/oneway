@@ -239,6 +239,7 @@ void slave(struct debug_t *debug)
 	IO_PORT &= ~(_BV(IO_PIN0) | _BV(IO_PIN1));
 	IO_DDR |= _BV(IO_PIN0) | _BV(IO_PIN1);
 	uart_init(1);
+	debug_print_P(PSTR("Receive module.\n"), debug);
 	htv->ee_addr = eeprom_read_word(&EE_address);
 
 	/* check the if the network address is correct */

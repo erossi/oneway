@@ -48,15 +48,13 @@ void debug_print(struct debug_t *debug)
 /*! \brief boot message */
 static void hello(struct debug_t *debug)
 {
-        debug_print_P(PSTR("\n\n\n"), debug);
-        debug_print_P(PSTR("HospiTV Rel: "), debug);
+        debug_print_P(PSTR("\nHospiTV Rel: "), debug);
         debug_print_P(PSTR(GITREL), debug);
         debug_print_P(PSTR("\n\n"), debug);
         debug_print_P(PSTR("Andrea Marabini <info@marabo.it>\n"), debug);
         debug_print_P(PSTR("Enrico Rossi <e.rossi@tecnobrain.com>\n"), debug);
         debug_print_P(PSTR("URL: http://tecnobrain.com/\n"), debug);
-        debug_print_P(PSTR("GNU GPL v3 - use at your own risk!\n"), debug);
-        debug_print_P(PSTR("\n\n"), debug);
+        debug_print_P(PSTR("GNU GPL v3 - use at your own risk!\n\n"), debug);
 }
 
 /*! \brief press 'y' or 'n' */
