@@ -21,11 +21,58 @@
  * \page txrxproto Interface protocol from TX to RX:
  *
  * from master tx -> slave rx:
- * - a serial string at 4800 bps, none parity, 8 bit, 1 bit stop.
- * The string is in the form:
- * AAAAP:RR\n
+ * - a serial string at 1200 bps, none parity, 8 bit, 1 bit stop.
+ *
+ * The module will display any char received on the console, connected
+ * to the serial port 1, within the range ascii from 32 to 128.
+ *
+ * It is possible in this way to monitor constantly the whole network,
+ * but only those messages directed to broadcast or to us will be
+ * executed.
+ *
+ * \section secrxcmd Sections:
+ * - \ref subrxacmd
+ * - \ref subrxpcmd
+ *
+ * \subsection subrxacmd a - change the address of the receiver.
+ *
+ * This command must be entered from the console.
+ *
+ * example:
+ *
+ * -> a\n
+ * <- Change address, remeber:\n
+ * <- - the address is in HEX, use digit from 0 to f\n
+ * <- - do not use 0000 or ffff as address\n
+ * <- Enter the 4 digit address [0001 - fffe]:\n
+ *
+ * \subsection subrxpcmd TxRx protocol definition.
+ * The received string must be in the form:
+ *
+ * xx[x..x]AAAAPPC:RR
+ *
  * where
- * AAAA is the same as above, P = PP, while RR is crc of the string.
+ * - at least 2 'x' sync char must be received.
+ * - AAAA is the address ascii - hex from 0000 to FFFF where:
+ *   - 0000 unconfigured device.
+ *   - FFFF is broadcast address.
+ * - PP is the pin number in Ascii/hex form from 00 to FF where:
+ *   - 00 - i/o pin 0
+ *   - 01 - i/o pin 1
+ *   - FF - All pin
+ * - C is the command in ascii/hex where:
+ *   - 0 is off.
+ *   - 1 is on.
+ * - RR is an 8 bit checksum of the whole string.
+ *
+ * example
+ *
+ * -> xxx0123011:?? (the value of RR unknown here)\n
+ * <- Received: 0123011 OK\n
+ * <- Action: Pin1 enable
+ *
+ * \note any command on the air will be checked and displayed, but
+ * only those for us will be executed.
  *
  */
 
