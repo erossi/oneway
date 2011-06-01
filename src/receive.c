@@ -75,6 +75,7 @@ void stop_rx(void)
 
 /*! \brief get a char from the RX and echo it on the console.
  * \return the received char.
+ * \note only char from ascii 32 to 128 are printed back.
  */
 char get_char_echo(void)
 {
@@ -104,6 +105,7 @@ void print_address(struct htv_t *htv, struct debug_t *debug)
 }
 
 /*! \brief input and store the address of the unit in EEPROM.
+ * \note the function will cycle until a correct address is entered.
  */
 void setup_address(struct htv_t *htv, struct debug_t *debug)
 {
@@ -122,6 +124,7 @@ void setup_address(struct htv_t *htv, struct debug_t *debug)
 			uart_putchar(0, *(htv->substr + i));
 		}
 
+		/* terminate the string */
 		*(htv->substr + 4) = 0;
 		htv->ee_addr = strtoul(htv->substr, 0, 16);
 		print_address(htv, debug);
@@ -139,17 +142,17 @@ void setup_address(struct htv_t *htv, struct debug_t *debug)
 /*! \brief execute command on a pin.
  *
  * \param pin which pin to enable or disable.
- * \param cmd 2 - enable, 3 - disable
+ * \param cmd 1 - enable, 0 - disable
  * \param debug the debug_t struct.
  */
 void set_cmd(const uint8_t pin, const uint8_t cmd, struct debug_t *debug)
 {
 	switch (cmd) {
-		case 2:
+		case 1:
 			IO_PORT |= _BV(pin);
 			debug_print_P(PSTR("on"), debug);
 			break;
-		case 3:
+		case 0:
 			IO_PORT &= ~_BV(pin);
 			debug_print_P(PSTR("off"), debug);
 			break;
@@ -162,6 +165,7 @@ void set_cmd(const uint8_t pin, const uint8_t cmd, struct debug_t *debug)
  *
  * \note the address check is done by comparing the received
  * address with the ee_address stored in htv_t.
+ * \note pin id 1 is considered hardware Pin0, pin id 2 is hw Pin1.
  */
 void set_pin(struct htv_t *htv, struct debug_t *debug)
 {
@@ -201,11 +205,15 @@ void look_for_cmd(struct htv_t *htv, struct debug_t *debug)
 			i++;
 	}
 
+	/* correctly terminate the string */
 	*(htv->x10str + 11) = 0;
+	/* print what has been received */
 	debug_print_P(PSTR("\nReceived: "), debug);
 	uart_printstr(0, htv->x10str);
+	/* check the command */
 	i = htv_check_cmd(htv);
 
+	/* if error */
 	if (i) {
 		debug_print_P(PSTR(" Error "), debug);
 		debug->line = utoa(i, debug->line, 16);
@@ -218,6 +226,7 @@ void look_for_cmd(struct htv_t *htv, struct debug_t *debug)
 		/* debug_print_htv(htv, debug); */
 	} else {
 		debug_print_P(PSTR(" OK\n"), debug);
+		/* execute the command */
 		set_pin(htv, debug);
 	}
 }
@@ -264,6 +273,7 @@ void slave(struct debug_t *debug)
 			       look_for_cmd(htv, debug);
 		}
 
+		/* also read a char from the serial port, unlocked */
 		c = uart_getchar(0, 0);
 
 		/* change the running address */
