@@ -24,6 +24,7 @@
  *
  * \section seccmd Possible command:
  * - \ref subacmd
+ * - \ref subccmd
  * - \ref subecmd
  * - \ref sublcmd
  * - \ref subpcmd
@@ -46,6 +47,23 @@
  * <- OK
  *
  * will change the device address 0x0123 to 0x1CDF.
+ *
+ * \subsection subccmd C - change the id of the master.
+ * C:N
+ *
+ * where:
+ * - N is the new address [0:f]
+ *
+ * reply to the 'C' command can be:
+ * - "OK" the address has changed.
+ * - "ko" some error occured.
+ *
+ * example:
+ *
+ * -> C:D\n
+ * <- OK
+ *
+ * will change the master address 0x0 to 0xD.
  *
  * \subsection subecmd E - echo on off.
  * E:X
@@ -101,6 +119,7 @@
  * <- the brief commands descrption.
  *
  * \todo the A command is not implemented yet.
+ * \todo the C command is not implemented yet.
  */
 
 #include <stdlib.h>
@@ -247,6 +266,9 @@ void master(struct debug_t *debug)
 
 		switch (*(htv->x10str)) {
 			case 'A':
+				debug_print_P(PSTR("ko\n"), debug);
+				break;
+			case 'C':
 				debug_print_P(PSTR("ko\n"), debug);
 				break;
 			case 'E':
