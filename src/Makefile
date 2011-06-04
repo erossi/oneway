@@ -81,3 +81,6 @@ version:
 
 doc:
 	cd ../ && ( cat Doxyfile ; echo "PROJECT_NUMBER=$(GIT_TAG)" ) | doxygen -
+
+docinstall: doc
+	cd .. && myremotedox.sh $(PRG_NAME)
