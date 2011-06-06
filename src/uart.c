@@ -147,16 +147,18 @@ char uart_getchar(const uint8_t port, const uint8_t locked)
  */
 void uart_putchar(const uint8_t port, const char c)
 {
-  if (c == '\n')
-    uart_putchar(port, '\r');
+	/*
+	   if (c == '\n')
+	   uart_putchar(port, '\r');
+	   */
 
-  if (port) {
-	  loop_until_bit_is_set(UCSR1A, UDRE1);
-	  UDR1 = c;
-  } else {
-	  loop_until_bit_is_set(UCSR0A, UDRE0);
-	  UDR0 = c;
-  }
+	if (port) {
+		loop_until_bit_is_set(UCSR1A, UDRE1);
+		UDR1 = c;
+	} else {
+		loop_until_bit_is_set(UCSR0A, UDRE0);
+		UDR0 = c;
+	}
 }
 
 /*! Send a C (NUL-terminated) string to the UART Tx.
