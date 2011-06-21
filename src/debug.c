@@ -1,12 +1,12 @@
-/* This file is part of HospiTV
+/* This file is part of OneWay
  * Copyright (C) 2011 Enrico Rossi
  *
- * HospiTV is free software: you can redistribute it and/or modify
+ * OneWay is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * HospiTV is distributed in the hope that it will be useful,
+ * OneWay is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -48,7 +48,7 @@ void debug_print(struct debug_t *debug)
 /*! \brief boot message */
 static void hello(struct debug_t *debug)
 {
-        debug_print_P(PSTR("\nHospiTV Rel: "), debug);
+        debug_print_P(PSTR("\nOneWay Rel: "), debug);
         debug_print_P(PSTR(GITREL), debug);
         debug_print_P(PSTR("\n\n"), debug);
         debug_print_P(PSTR("Andrea Marabini <info@marabo.it>\n"), debug);

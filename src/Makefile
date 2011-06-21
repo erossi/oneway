@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-PRG_NAME = hospitv
+PRG_NAME = oneway
 MCU = atmega164p
 OPTLEV = 2
 FCPU = 1000000UL
@@ -21,7 +21,7 @@ PWD = $(shell pwd)
 INC = -I/usr/lib/avr/include/
 
 CFLAGS = $(INC) -Wall -Wstrict-prototypes -pedantic -mmcu=$(MCU) -O$(OPTLEV) -D F_CPU=$(FCPU)
-LFLAGS =
+LFLAGS = -lm
 
 PRGNAME = $(PRG_NAME)
 GIT_TAG = "Unknown"
@@ -42,7 +42,7 @@ DUDES = sudo avrdude -c $(DUDEDEV) -p $(MCU) -P $(DUDEPORT) -e -U flash:w:$(PRGN
 
 OBJCOPY = avr-objcopy -j .text -j .data -O ihex
 OBJDUMP = avr-objdump
-SIZE = avr-size
+SIZE = avr-size --format=avr --mcu=$(MCU)
 
 REMOVE = rm -f
 
@@ -84,3 +84,7 @@ doc:
 
 docinstall: doc
 	cd .. && myremotedox.sh $(PRG_NAME)
+
+size:
+	$(SIZE) $(PRGNAME)_master.elf
+	$(SIZE) $(PRGNAME)_slave.elf
