@@ -192,7 +192,7 @@ void host_get_command(char *cmd, const uint8_t echo)
 			uart_putchar(0, *(cmd + i));
 
 		i++;
-	} while ((i<MAX_CMD_LENGHT) && ((*(cmd + i - 1) != '\r') || (*(cmd + i - 1) != '\n')));
+	} while ((i<MAX_CMD_LENGHT) && (*(cmd + i - 1) != '\r') && (*(cmd + i - 1) != '\n'));
 
 	/* Substitute '\n' with a \0 to terminate the string or
 	 put a \0 at cmd[19] */
