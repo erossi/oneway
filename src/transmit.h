@@ -22,7 +22,7 @@
 #ifndef TX_H
 #define TX_H
 /*! the header of the packet to tx */
-#define TX_HEAD "xxx"
+#define TX_HEAD "xxxxxx"
 /*! id of the master modules, required if more than 1 master is
  * present.
  */

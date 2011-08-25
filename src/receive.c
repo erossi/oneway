@@ -212,7 +212,6 @@ void set_cmd(const uint8_t pin, const uint8_t cmd, struct debug_t *debug)
  *
  * \note the address check is done by comparing the received
  * address with the ee_address stored in htv_t.
- * \note pin id 1 is considered hardware Pin0, pin id 2 is hw Pin1.
  */
 void set_pin(struct htv_t *htv, struct debug_t *debug)
 {
@@ -220,11 +219,11 @@ void set_pin(struct htv_t *htv, struct debug_t *debug)
 		debug_print_P(PSTR("Action: "), debug);
 
 		switch (htv->pin) {
-			case 1:
+			case 0:
 				debug_print_P(PSTR("Pin0 - "), debug);
 				set_cmd(IO_PIN0, htv->cmd, debug);
 				break;
-			case 2:
+			case 1:
 				debug_print_P(PSTR("Pin1 - "), debug);
 				set_cmd(IO_PIN1, htv->cmd, debug);
 				break;
@@ -241,7 +240,7 @@ void look_for_cmd(struct htv_t *htv, struct debug_t *debug)
 {
 	uint8_t i = 0;
 
-	while (i<11) {
+	while (i<10) {
 		*(htv->x10str + i) = get_char_echo();
 
 		/* ignore 'x' char.
@@ -253,7 +252,7 @@ void look_for_cmd(struct htv_t *htv, struct debug_t *debug)
 	}
 
 	/* correctly terminate the string */
-	*(htv->x10str + 11) = 0;
+	*(htv->x10str + 10) = 0;
 	/* print what has been received */
 	debug_print_P(PSTR("\nReceived: "), debug);
 	uart_printstr(0, htv->x10str);
