@@ -84,11 +84,6 @@
 
 #include "receive.h"
 
-/*! The HTV network address */
-uint16_t EEMEM EE_address;
-/*! The ~EE_address to check the correct value of the address */
-uint16_t EEMEM EE_naddress;
-
 /*! \brief enable the RX module and related serial port.
  * \note if RTX moduled is used, then a more complicated
  * init sequence must be used.
@@ -139,51 +134,6 @@ char get_char_echo(void)
 	   */
 
 	return(c);
-}
-
-/*! \brief print the RX address in use.
- */
-void print_address(struct htv_t *htv, struct debug_t *debug)
-{
-	debug_print_P(PSTR("\nAddress set to: 0x"), debug);
-	debug->line = utoa(htv->ee_addr, debug->string, 16);
-	debug_print(debug);
-	debug_print_P(PSTR("\n"), debug);
-}
-
-/*! \brief input and store the address of the unit in EEPROM.
- * \note the function will cycle until a correct address is entered.
- */
-void setup_address(struct htv_t *htv, struct debug_t *debug)
-{
-	uint8_t i;
-	char c = 0;
-
-	while ((c != 'y') && (c != 'Y')) {
-		print_address(htv, debug);
-		debug_print_P(PSTR("\nChange address, remeber:\n"), debug);
-		debug_print_P(PSTR(" - the address is in HEX, use digit from 0 to f\n"), debug);
-		debug_print_P(PSTR(" - do not use 0000 or ffff as address\n"), debug);
-		debug_print_P(PSTR("\nEnter the 4 digit address [0001 - fffe]: "), debug);
-
-		for (i=0; i<4; i++) {
-			*(htv->substr + i) = uart_getchar(0, 1);
-			uart_putchar(0, *(htv->substr + i));
-		}
-
-		/* terminate the string */
-		*(htv->substr + 4) = 0;
-		htv->ee_addr = strtoul(htv->substr, 0, 16);
-		print_address(htv, debug);
-		debug_print_P(PSTR("confirm? (y/n) "), debug);
-		c = uart_getchar(0, 1);
-		uart_putchar(0, c);
-	}
-
-	eeprom_write_word(&EE_address, htv->ee_addr);
-	eeprom_write_word(&EE_naddress, ~(htv->ee_addr));
-	debug_print_P(PSTR("\nAddress changed and saved.\n"), debug);
-	debug_print_P(PSTR("Reset the receiver to check if everything is OK\n"), debug);
 }
 
 /*! \brief execute command on a pin.
@@ -295,15 +245,7 @@ void slave(struct debug_t *debug)
 	IO_DDR |= _BV(IO_PIN0) | _BV(IO_PIN1);
 	uart_init(1);
 	debug_print_P(PSTR("Receive module.\n"), debug);
-	htv->ee_addr = eeprom_read_word(&EE_address);
-
-	/* check the if the network address is correct */
-	if (htv->ee_addr != ~(eeprom_read_word(&EE_naddress))) {
-		htv->ee_addr = 0;
-		setup_address(htv, debug);
-	} else {
-		print_address(htv, debug);
-	}
+	debug_print_address(htv, debug);
 
 	start_rx();
 
@@ -327,7 +269,7 @@ void slave(struct debug_t *debug)
 			stop_rx();
 			uart_flush(0);
 			uart_flush(1);
-			setup_address(htv, debug);
+			debug_setup_address(htv, debug);
 			start_rx();
 		}
 	}

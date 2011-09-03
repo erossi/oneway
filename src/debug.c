@@ -150,3 +150,47 @@ void debug_print_htv(struct htv_t *htv, struct debug_t *debug)
 	strcat_P(debug->line, PSTR("\n"));
 	debug_print(debug);
 }
+
+/*! \brief print the RX address in use.
+ */
+void debug_print_address(struct htv_t *htv, struct debug_t *debug)
+{
+	debug_print_P(PSTR("\nAddress set to: 0x"), debug);
+	debug->line = utoa(htv->ee_addr, debug->string, 16);
+	debug_print(debug);
+	debug_print_P(PSTR("\n"), debug);
+}
+
+/*! \brief input and store the address of the unit in EEPROM.
+ * \note the function will cycle until a correct address is entered.
+ */
+void debug_setup_address(struct htv_t *htv, struct debug_t *debug)
+{
+	uint8_t i;
+	char c = 0;
+
+	while ((c != 'y') && (c != 'Y')) {
+		debug_print_address(htv, debug);
+		debug_print_P(PSTR("\nChange address, remeber:\n"), debug);
+		debug_print_P(PSTR(" - the address is in HEX, use digit from 0 to f\n"), debug);
+		debug_print_P(PSTR(" - do not use 0000 or ffff as address\n"), debug);
+		debug_print_P(PSTR("\nEnter the 4 digit address [0001 - fffe]: "), debug);
+
+		for (i=0; i<4; i++) {
+			*(htv->substr + i) = uart_getchar(0, 1);
+			uart_putchar(0, *(htv->substr + i));
+		}
+
+		/* terminate the string */
+		*(htv->substr + 4) = 0;
+		htv->ee_addr = strtoul(htv->substr, 0, 16);
+		debug_print_address(htv, debug);
+		debug_print_P(PSTR("confirm? (y/n) "), debug);
+		c = uart_getchar(0, 1);
+		uart_putchar(0, c);
+	}
+
+	htv_store_address(htv);
+	debug_print_P(PSTR("\nAddress changed and saved.\n"), debug);
+	debug_print_P(PSTR("Reset the receiver to check if everything is OK\n"), debug);
+}

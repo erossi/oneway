@@ -64,5 +64,7 @@ uint8_t debug_wait_for_y(struct debug_t *debug);
 struct debug_t *debug_init(void);
 void debug_free(struct debug_t *debug);
 void debug_print_htv(struct htv_t *htv, struct debug_t *debug);
+void debug_setup_address(struct htv_t *htv, struct debug_t *debug);
+void debug_print_address(struct htv_t *htv, struct debug_t *debug);
 
 #endif

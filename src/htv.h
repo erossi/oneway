@@ -55,6 +55,7 @@ struct htv_t {
 	uint16_t ee_addr;
 };
 
+void htv_store_address(struct htv_t *htv);
 struct htv_t *htv_init(struct htv_t *htv);
 void htv_free(struct htv_t *htv);
 uint8_t crc8_str(const char *str);

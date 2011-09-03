@@ -24,8 +24,22 @@
 #include <string.h>
 #include <util/crc16.h>
 #include <avr/io.h>
+#include <avr/eeprom.h>
 
 #include "htv.h"
+
+/*! The HTV network address */
+uint16_t EEMEM EE_address;
+/*! The ~EE_address to check the correct value of the address */
+uint16_t EEMEM EE_naddress;
+
+/*! \brief store the address of the unit in EEPROM.
+ */
+void htv_store_address(struct htv_t *htv)
+{
+	eeprom_write_word(&EE_address, htv->ee_addr);
+	eeprom_write_word(&EE_naddress, ~(htv->ee_addr));
+}
 
 /*! \brief initialize the htv struct */
 struct htv_t *htv_init(struct htv_t *htv)
@@ -33,6 +47,12 @@ struct htv_t *htv_init(struct htv_t *htv)
 	htv = malloc(sizeof(struct htv_t));
 	htv->substr = malloc(MAX_SUBSTR_LENGHT);
 	htv->x10str = malloc(MAX_CMD_LENGHT);
+	htv->ee_addr = eeprom_read_word(&EE_address);
+
+	/* check the if the network address is correct */
+	if (htv->ee_addr != ~(eeprom_read_word(&EE_naddress)))
+		htv->ee_addr = 0;
+
 	return(htv);
 }
 
